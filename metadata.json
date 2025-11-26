@@ -1,0 +1,5 @@
+{
+  "name": "Inventory (Admin)",
+  "description": "A modern, responsive inventory management dashboard featuring a modal-based creation workflow, real-time validation, and AI-powered description generation.",
+  "requestFramePermissions": []
+}

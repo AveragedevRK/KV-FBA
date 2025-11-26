@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inventory (Admin)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        /* Global Z-Index Layering System */
+        --z-base: 1; /* Normal content */
+        --z-content-overlay: 100; /* For sticky elements within content, if needed */
+        --z-header: 1000; /* Sticky header */
+        --z-dropdown: 1100; /* Dropdowns, select menus, overflow menus, context menus */
+        --z-popover: 1200; /* Tooltips, small floating info panels */
+        --z-modal-backdrop: 1290; /* Backdrop for modals/full-screen panels */
+        --z-modal: 1300; /* Full modals, side panels that cover content */
+        --z-toast: 1400; /* Toasts/notifications */
+      }
+
+      body {
+        font-family: 'IBM Plex Sans', sans-serif;
+        background-color: #161616; /* Gray 100 */
+        color: #f4f4f4; /* Text 01 */
+      }
+      /* Carbon-like custom utilities for Dark Theme */
+      .carbon-input {
+        background-color: #393939; /* Gray 80 */
+        color: #f4f4f4;
+        border-bottom: 1px solid #8d8d8d;
+        transition: all 0.1s;
+      }
+      .carbon-input:focus {
+        outline: 2px solid #ffffff; /* Focus is often white in dark themes */
+        outline-offset: -2px;
+      }
+      .carbon-input.error {
+        outline: 2px solid #fa4d56; /* Red 50 for dark mode */
+        outline-offset: -2px;
+      }
+
+      /* Blue Text Readability Enhancement */
+      .blue-text-readable {
+        text-shadow: 0 0 3px rgba(255, 255, 255, 0.15);
+        font-weight: 500 !important;
+      }
+
+      @media (max-width: 768px) {
+        .blue-text-readable.text-\[10px\] { font-size: 11px !important; }
+        .blue-text-readable.text-\[11px\] { font-size: 12px !important; }
+        .blue-text-readable.text-\[12px\] { font-size: 13px !important; }
+        .blue-text-readable.text-\[13px\] { font-size: 14px !important; }
+        .blue-text-readable.text-\[14px\] { font-size: 15px !important; }
+        /* Fallback */
+        .blue-text-readable:not([class*="text-["]) { font-size: calc(100% + 1px); }
+      }
+
+      /* ANIMATIONS */
+      
+      /* 1. Slide Up Fade (for Cards/Rows) */
+      @keyframes slideUpFade {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      .animate-slide-up-fade {
+        animation: slideUpFade 0.4s cubic-bezier(0.2, 0, 0.38, 0.9) forwards;
+      }
+
+      /* 2. Grow Height (for Charts) */
+      @keyframes growHeight {
+        from { height: 0; }
+        to { height: var(--target-height); }
+      }
+      
+      .animate-grow-bar {
+        animation: growHeight 1s cubic-bezier(0.2, 0, 0.38, 0.9) forwards;
+      }
+
+      /* 3. Slide In Right (for Side Panels/Pages) */
+      @keyframes slideInRight {
+        from {
+          opacity: 0;
+          transform: translateX(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      .animate-slide-in-right {
+        animation: slideInRight 0.3s cubic-bezier(0.2, 0, 0.38, 0.9) forwards;
+      }
+
+      /* 4. Fade In */
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      
+      .animate-fade-in-fast {
+        animation: fadeIn 0.2s ease-out forwards;
+      }
+
+      /* 5. Modal Zoom In */
+      @keyframes modalZoom {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+      }
+      .animate-modal-enter {
+        animation: modalZoom 0.2s cubic-bezier(0.2, 0, 0.38, 0.9) forwards;
+      }
+      
+      /* 6. Slide Down (Dropdowns) */
+      @keyframes dropDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-drop-down {
+        animation: dropDown 0.2s cubic-bezier(0.2, 0, 0.38, 0.9) forwards;
+      }
+
+      /* 7. Slide Up (Drop-up Menus) */
+      @keyframes slideUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-slide-up {
+        animation: slideUp 0.2s cubic-bezier(0.2, 0, 0.38, 0.9) forwards;
+      }
+
+      /* Helper to stagger animations */
+      .stagger-1 { animation-delay: 50ms; }
+      .stagger-2 { animation-delay: 100ms; }
+      .stagger-3 { animation-delay: 150ms; }
+      .stagger-4 { animation-delay: 200ms; }
+      .stagger-5 { animation-delay: 250ms; }
+      .stagger-6 { animation-delay: 300ms; }
+
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react-dom": "https://aistudiocdn.com/react-dom@^19.2.0",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
