@@ -57,23 +57,23 @@ const UsersPage: React.FC<UsersPageProps> = () => {
   };
 
   const inputStyle = (hasError: boolean) => `
-    w-full h-[40px] bg-[#393939] border-b px-4 text-[14px] text-[#f4f4f4] placeholder-[#a8a8a8]
+    w-full h-[40px] bg-[var(--bg-2)] border-b px-4 text-[14px] text-[var(--text-primary)] placeholder-[var(--text-tertiary)]
     transition-all duration-200 outline-none
     ${hasError
       ? 'border-b-2 border-[#fa4d56] outline-[#fa4d56]'
-      : 'border-[#8d8d8d] focus:outline focus:outline-2 focus:outline-offset-[-2px] focus:outline-white'}
+      : 'border-[var(--border-2)] focus:outline focus:outline-2 focus:outline-offset-[-2px] focus:outline-white'}
   `;
-  const labelStyle = "text-[12px] leading-[1.3] text-[#c6c6c6] mb-2 block";
+  const labelStyle = "text-[12px] leading-[1.3] text-[var(--text-secondary)] mb-2 block";
   const errorTextStyle = "text-[12px] text-[#fa4d56] mt-1 font-normal";
 
   return (
-    <div className="flex flex-col h-full bg-[#161616] relative animate-fade-in-fast">
+    <div className="flex flex-col h-full bg-[var(--bg-0)] relative animate-fade-in-fast">
       
       {/* Header */}
       <div className="px-4 md:px-6 pt-6 pb-4 shrink-0 flex flex-wrap gap-4 justify-between items-center">
         <div>
-           <h1 className="text-[24px] font-semibold text-[#f4f4f4] leading-tight">Users</h1>
-           <p className="text-[13px] text-[#8d8d8d] mt-1">Manage access and roles for your organization.</p>
+           <h1 className="text-[24px] font-semibold text-[var(--text-primary)] leading-tight">Users</h1>
+           <p className="text-[13px] text-[var(--text-tertiary)] mt-1">Manage access and roles for your organization.</p>
         </div>
         
         <button 
@@ -87,11 +87,11 @@ const UsersPage: React.FC<UsersPageProps> = () => {
 
       {/* Table Container */}
       <div className="flex-1 px-4 md:px-6 pb-4 min-h-0 overflow-hidden flex flex-col">
-        <div className="flex-1 min-h-0 overflow-hidden rounded-lg border border-[#393939] shadow-sm bg-[#212121]">
+        <div className="flex-1 min-h-0 overflow-hidden rounded-lg border border-[var(--border-1)] shadow-sm bg-[var(--bg-1)]">
             <div className="overflow-x-auto h-full">
                 <div className="min-w-[600px]">
                     {/* Table Header */}
-                    <div className="grid grid-cols-12 gap-4 px-6 py-3 border-b border-[#393939] bg-[#2a2a2a] text-[11px] font-bold text-[#8d8d8d] uppercase tracking-wider sticky top-0 z-10">
+                    <div className="grid grid-cols-12 gap-4 px-6 py-3 border-b border-[var(--border-1)] bg-[var(--bg-2)] text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider sticky top-0 z-10">
                         <div className="col-span-4 flex items-center gap-2">
                            Name
                         </div>
@@ -104,25 +104,25 @@ const UsersPage: React.FC<UsersPageProps> = () => {
                     </div>
 
                     {/* Table Body */}
-                    <div className="divide-y divide-[#333]">
+                    <div className="divide-y divide-[var(--border-1)]">
                         {users.map((user, index) => (
                             <div 
                                 key={user.id}
-                                className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-[#2a2a2a] transition-colors duration-150 group animate-slide-up-fade"
+                                className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-[var(--bg-2)] transition-colors duration-150 group animate-slide-up-fade"
                                 style={{ animationDelay: `${index * 50}ms` }}
                             >
                                 <div className="col-span-4 flex items-center gap-3">
-                                   <div className="w-8 h-8 rounded-full bg-[#393939] flex items-center justify-center text-[#c6c6c6] border border-[#525252]">
+                                   <div className="w-8 h-8 rounded-full bg-[var(--bg-2)] flex items-center justify-center text-[var(--text-secondary)] border border-[var(--border-2)]">
                                        <UserIcon size={14} />
                                    </div>
-                                   <span className="font-medium text-[#f4f4f4] text-[14px]">{user.name}</span>
+                                   <span className="font-medium text-[var(--text-primary)] text-[14px]">{user.name}</span>
                                 </div>
-                                <div className="col-span-5 flex items-center gap-2 text-[#c6c6c6] text-[14px]">
-                                   <Mail size={14} className="text-[#8d8d8d]" />
+                                <div className="col-span-5 flex items-center gap-2 text-[var(--text-secondary)] text-[14px]">
+                                   <Mail size={14} className="text-[var(--text-tertiary)]" />
                                    {user.email}
                                 </div>
                                 <div className="col-span-3 flex items-center">
-                                   <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[12px] font-medium border ${user.role === 'Admin' ? 'bg-[#0f62fe]/10 text-[#0f62fe] border-[#0f62fe]/30 blue-text-readable' : 'bg-[#393939] text-[#c6c6c6] border-[#525252]'}`}>
+                                   <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[12px] font-medium border ${user.role === 'Admin' ? 'bg-[#0f62fe]/10 text-[#0f62fe] border-[#0f62fe]/30 blue-text-readable' : 'bg-[var(--bg-2)] text-[var(--text-secondary)] border-[var(--border-2)]'}`}>
                                       <Shield size={12} />
                                       {user.role}
                                    </span>
@@ -137,15 +137,15 @@ const UsersPage: React.FC<UsersPageProps> = () => {
 
       {/* Add User Modal */}
       {isModalOpen && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-[var(--z-modal-backdrop)] flex items-center justify-center bg-[#161616]/60 backdrop-blur-[2px] animate-fade-in-fast">
-          <div className="bg-[#262626] w-full max-w-[480px] shadow-2xl relative z-[var(--z-modal)] animate-modal-enter flex flex-col rounded-lg overflow-hidden border border-[#393939]">
+        <div className="fixed inset-0 z-[var(--z-modal-backdrop)] flex items-center justify-center bg-[var(--overlay)] backdrop-blur-[2px] animate-fade-in-fast">
+          <div className="bg-[var(--bg-1)] w-full max-w-[480px] shadow-2xl relative z-[var(--z-modal)] animate-modal-enter flex flex-col rounded-lg overflow-hidden border border-[var(--border-1)]">
              
              {/* Modal Header */}
-             <div className="flex items-center justify-between px-6 py-4 border-b border-[#393939] bg-[#262626]">
-                <h2 className="text-[18px] font-semibold text-[#f4f4f4]">Add User</h2>
+             <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-1)] bg-[var(--bg-1)]">
+                <h2 className="text-[18px] font-semibold text-[var(--text-primary)]">Add User</h2>
                 <button 
                   onClick={handleCloseModal}
-                  className="text-[#c6c6c6] hover:text-[#f4f4f4] transition-colors p-1 hover:bg-[#393939] rounded"
+                  className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors p-1 hover:bg-[var(--bg-2)] rounded"
                 >
                   <X size={20} />
                 </button>
@@ -178,10 +178,10 @@ const UsersPage: React.FC<UsersPageProps> = () => {
              </div>
 
              {/* Modal Footer */}
-             <div className="px-6 py-4 border-t border-[#393939] bg-[#262626] flex justify-end gap-3">
+             <div className="px-6 py-4 border-t border-[var(--border-1)] bg-[var(--bg-1)] flex justify-end gap-3">
                 <button 
                     onClick={handleCloseModal}
-                    className="h-[40px] px-6 bg-[#393939] hover:bg-[#4c4c4c] text-[#f4f4f4] rounded font-medium text-[14px] transition-colors"
+                    className="h-[40px] px-6 bg-[var(--bg-2)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] rounded font-medium text-[14px] transition-colors"
                 >
                     Cancel
                 </button>

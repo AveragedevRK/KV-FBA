@@ -208,25 +208,25 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ onSave, onCancel, onGoT
     }
   };
 
-  // IBM Carbon Styles (Dark Theme - Gray 90)
-  const labelStyle = "text-[14px] text-[#c6c6c6] mb-1 block";
+  // IBM Carbon Styles (Adapted for light/dark theme)
+  const labelStyle = "text-[14px] text-[var(--text-secondary)] mb-1 block";
   const inputStyle = (hasError: boolean) => `
-    w-full h-[40px] bg-[#393939] border-b px-4 text-[14px] text-[#f4f4f4] placeholder-[#a8a8a8]
+    w-full h-[40px] bg-[var(--bg-2)] border-b px-4 text-[14px] text-[var(--text-primary)] placeholder-[var(--text-tertiary)]
     transition-all duration-200 outline-none
     ${hasError
       ? 'border-b-2 border-[#fa4d56] outline-[#fa4d56]'
-      : 'border-[#8d8d8d] focus:outline focus:outline-2 focus:outline-offset-[-2px] focus:outline-white'}
+      : 'border-[var(--border-2)] focus:outline focus:outline-2 focus:outline-offset-[-2px] focus:outline-[var(--text-primary)]'}
   `;
   const errorTextStyle = "text-[12px] text-[#fa4d56] mt-1 font-normal animate-slide-in-right";
 
   return (
     <>
-      <div className="w-full h-full bg-[#262626] flex flex-col animate-slide-up-fade duration-300">
+      <div className="w-full h-full bg-[var(--bg-1)] flex flex-col animate-slide-up-fade duration-300">
 
         {/* Header */}
-        <div className="px-4 md:px-6 py-4 border-b border-[#393939] shrink-0">
-          <h2 className="text-[20px] font-bold text-[#f4f4f4]">New Product Card</h2>
-          <p className="text-[14px] text-[#c6c6c6]">Enter the details for the new inventory item.</p>
+        <div className="px-4 md:px-6 py-4 border-b border-[var(--border-1)] shrink-0">
+          <h2 className="text-[20px] font-bold text-[var(--text-primary)]">New Product Card</h2>
+          <p className="text-[14px] text-[var(--text-secondary)]">Enter the details for the new inventory item.</p>
         </div>
 
         {/* Body */}
@@ -239,26 +239,26 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ onSave, onCancel, onGoT
             <div className="w-full lg:w-[280px] shrink-0 flex flex-col animate-slide-in-right" style={{ animationDelay: '100ms' }}>
               <label className={labelStyle}>Product Image</label>
               <div
-                className={`w-full aspect-square bg-[#393939] border border-dashed flex flex-col items-center justify-center cursor-pointer relative group overflow-hidden mb-4 transition-all duration-300
-                      ${errors.image ? 'border-[#fa4d56]' : 'border-[#8d8d8d] hover:bg-[#4c4c4c]'}
+                className={`w-full aspect-square bg-[var(--bg-2)] border border-dashed flex flex-col items-center justify-center cursor-pointer relative group overflow-hidden mb-4 transition-all duration-300
+                      ${errors.image ? 'border-[#fa4d56]' : 'border-[var(--border-2)] hover:bg-[var(--bg-hover)]'}
                     `}
                 onClick={() => fileInputRef.current?.click()}
               >
                 {imagePreview ? (
                   <>
                     <img src={imagePreview} alt="Preview" className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110" />
-                    <div className="absolute inset-0 bg-[#161616]/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute inset-0 bg-[var(--overlay)] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                       <Upload className="text-white w-8 h-8" />
                     </div>
                   </>
                 ) : (
                   <div className="flex flex-col items-center gap-3 px-4 text-center">
-                    <div className="w-12 h-12 bg-[#262626] flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
-                      <ImageIcon className="w-6 h-6 text-[#c6c6c6]" />
+                    <div className="w-12 h-12 bg-[var(--bg-1)] flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                      <ImageIcon className="w-6 h-6 text-[var(--text-secondary)]" />
                     </div>
                     <div>
-                      <span className="text-[14px] text-[#0062ff] font-medium block group-hover:underline blue-text-readable">Upload Image</span>
-                      <span className="text-[12px] text-[#8d8d8d] mt-1">Drag & drop or click</span>
+                      <span className="text-[14px] text-[#0f62fe] font-medium block group-hover:underline blue-text-readable">Upload Image</span>
+                      <span className="text-[12px] text-[var(--text-tertiary)] mt-1">Drag & drop or click</span>
                     </div>
                   </div>
                 )}
@@ -266,9 +266,9 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ onSave, onCancel, onGoT
               </div>
               {errors.image && <p className={errorTextStyle}>{errors.image}</p>}
 
-              <div className="p-4 bg-[#393939]/50 border border-[#393939] hidden sm:block">
-                <h4 className="text-[13px] text-[#f4f4f4] font-medium mb-2">Image Guidelines</h4>
-                <ul className="text-[12px] text-[#c6c6c6] list-disc pl-4 space-y-1">
+              <div className="p-4 bg-[var(--bg-2)] border border-[var(--border-1)] hidden sm:block">
+                <h4 className="text-[13px] text-[var(--text-primary)] font-medium mb-2">Image Guidelines</h4>
+                <ul className="text-[12px] text-[var(--text-secondary)] list-disc pl-4 space-y-1">
                   <li>Square aspect ratio recommended</li>
                   <li>Max file size: 5MB</li>
                   <li>High resolution preferred</li>
@@ -323,7 +323,7 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ onSave, onCancel, onGoT
 
               {/* Measurements Section */}
               <div className="shrink-0">
-                <h3 className={`${labelStyle} font-bold text-[#f4f4f4] text-[14px] mb-4`}>Measurements</h3>
+                <h3 className={`${labelStyle} font-bold text-[var(--text-primary)] text-[14px] mb-4`}>Measurements</h3>
                 
                 {/* Product Dimensions */}
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
@@ -418,7 +418,7 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ onSave, onCancel, onGoT
                   value={formData.description}
                   onChange={handleChange}
                   placeholder="Product description..."
-                  className={`flex-1 w-full bg-[#393939] border border-[#8d8d8d] p-4 text-[14px] text-[#f4f4f4] focus:outline focus:outline-2 focus:outline-white focus:outline-offset-[-2px] resize-none transition-all duration-200`}
+                  className={`flex-1 w-full bg-[var(--bg-2)] border border-[var(--border-2)] p-4 text-[14px] text-[var(--text-primary)] focus:outline focus:outline-2 focus:outline-[var(--text-primary)] focus:outline-offset-[-2px] resize-none transition-all duration-200`}
                 />
               </div>
             </div>
@@ -428,28 +428,28 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ onSave, onCancel, onGoT
         </div>
 
         {/* Footer */}
-        <div className="px-4 md:px-6 py-4 border-t border-[#393939] flex justify-end gap-4 bg-[#262626] shrink-0 z-10">
+        <div className="px-4 md:px-6 py-4 border-t border-[var(--border-1)] flex justify-end gap-4 bg-[var(--bg-1)] shrink-0 z-10">
           {apiError && (
             <p className="text-[#fa4d56] text-[14px] flex items-center gap-2 mr-auto animate-slide-in-right">
               <AlertCircle size={16} /> {apiError}
             </p>
           )}
           <button
-            type="button" // Change to type="button" to prevent default form submission from this button
+            type="button" 
             onClick={onCancel}
             disabled={isSaving}
-            className={`h-[48px] px-6 md:px-8 bg-[#393939] text-[#f4f4f4] hover:bg-[#4c4c4c] transition-colors text-[14px] font-medium hover:scale-105 active:scale-95 duration-200 ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`h-[48px] px-6 md:px-8 bg-[var(--bg-2)] text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-colors text-[14px] font-medium hover:scale-105 active:scale-95 duration-200 ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             Cancel
           </button>
           <button
-            type="submit" // Ensure this is a submit button if the form is wrapped, or call handleSave directly
-            onClick={handleSave} // Keep onClick to call the handler
+            type="submit" 
+            onClick={handleSave} 
             disabled={!isFormValid() || isSaving}
             className={`h-[48px] px-6 md:px-8 text-white text-[14px] font-medium transition-all duration-200 hover:scale-105 active:scale-95 flex items-center gap-2
                 ${isFormValid() && !isSaving
                 ? 'bg-[#0062ff] hover:bg-[#0353e9]'
-                : 'bg-[#525252] cursor-not-allowed text-[#c6c6c6]'}
+                : 'bg-[var(--bg-3)] cursor-not-allowed text-[var(--text-tertiary)]'}
               `}
           >
             {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -461,18 +461,18 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ onSave, onCancel, onGoT
 
       {/* Success Modal */}
       {showSuccessModal && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-[var(--z-modal-backdrop)] flex items-center justify-center bg-[#161616]/60 backdrop-blur-[2px] animate-in fade-in duration-200 p-4">
-          <div className="bg-[#262626] border border-[#393939] p-6 md:p-8 w-full max-w-[420px] shadow-2xl relative z-[var(--z-modal)] animate-slide-up-fade">
+        <div className="fixed inset-0 z-[var(--z-modal-backdrop)] flex items-center justify-center bg-[var(--overlay)] backdrop-blur-[2px] animate-in fade-in duration-200 p-4">
+          <div className="bg-[var(--bg-1)] border border-[var(--border-1)] p-6 md:p-8 w-full max-w-[420px] shadow-2xl relative z-[var(--z-modal)] animate-slide-up-fade">
             <div className="flex flex-col items-center text-center">
               <div className="w-16 h-16 bg-[#24a148]/20 flex items-center justify-center mb-6 border border-[#24a148]/50">
                  <Check size={32} className="text-[#24a148]" />
               </div>
               
-              <h3 className="text-[24px] font-semibold text-[#f4f4f4] mb-2">Product Saved</h3>
-              <p className="text-[14px] text-[#c6c6c6] mb-2 leading-relaxed">
-                <span className="text-[#f4f4f4] font-medium px-1 bg-[#393939]">{formData.name}</span> has been added to your inventory.
+              <h3 className="text-[24px] font-semibold text-[var(--text-primary)] mb-2">Product Saved</h3>
+              <p className="text-[14px] text-[var(--text-secondary)] mb-2 leading-relaxed">
+                <span className="text-[var(--text-primary)] font-medium px-1 bg-[var(--bg-2)]">{formData.name}</span> has been added to your inventory.
               </p>
-              <p className="text-[14px] text-[#8d8d8d] mb-8">
+              <p className="text-[14px] text-[var(--text-tertiary)] mb-8">
                 What would you like to do next?
               </p>
               
@@ -485,7 +485,7 @@ const AddProductPage: React.FC<AddProductPageProps> = ({ onSave, onCancel, onGoT
                  </button>
                  <button 
                     onClick={handleReset} 
-                    className="w-full h-[48px] bg-[#393939] hover:bg-[#4c4c4c] text-[#f4f4f4] text-[14px] font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                    className="w-full h-[48px] bg-[var(--bg-2)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] text-[14px] font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                   >
                     Create Another Product
                  </button>

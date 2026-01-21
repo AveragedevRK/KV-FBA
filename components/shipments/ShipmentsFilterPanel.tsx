@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { ShipmentFilterState, INITIAL_SHIPMENT_FILTERS } from '../../hooks/useShipments';
@@ -22,18 +21,21 @@ const ShipmentsFilterPanel: React.FC<ShipmentsFilterPanelProps> = ({ isOpen, onC
 
   if (!isOpen) return null;
 
-  const selectStyle = "w-full h-[40px] bg-[#393939] border-b border-[#8d8d8d] text-[#f4f4f4] px-3 text-[14px] focus:outline-none transition-colors focus:border-white appearance-none";
-  const labelStyle = "block text-[12px] text-[#c6c6c6] mb-2 uppercase tracking-wide";
+  const selectStyle = "w-full h-[40px] bg-[var(--bg-2)] border-b border-[var(--border-2)] text-[var(--text-primary)] px-3 text-[14px] focus:outline-none transition-colors focus:border-[var(--text-primary)] appearance-none";
+  const labelStyle = "block text-[12px] text-[var(--text-secondary)] mb-2 uppercase tracking-wide";
 
   return (
     <>
-      <div className="fixed inset-0 bg-[#161616]/60 z-[var(--z-modal-backdrop)] backdrop-blur-sm animate-fade-in-fast" onClick={onClose} />
-      <div className="fixed top-0 right-0 h-full w-[320px] md:w-[400px] bg-[#262626] border-l border-[#393939] shadow-2xl z-[var(--z-modal)] flex flex-col animate-slide-in-right">
+      <div className="fixed inset-0 bg-[var(--overlay)] z-[var(--z-modal-backdrop)] backdrop-blur-sm animate-fade-in-fast" onClick={onClose} />
+      <div 
+        className="fixed right-0 w-[320px] md:w-[400px] bg-[var(--bg-1)] border-l border-[var(--border-1)] shadow-2xl z-[var(--z-modal)] flex flex-col animate-slide-in-right"
+        style={{ top: '48px', height: 'calc(100vh - 96px)' }}
+      >
         
         {/* Header */}
-        <div className="px-6 py-4 border-b border-[#393939] flex justify-between items-center">
-          <h2 className="text-[18px] font-semibold text-[#f4f4f4]">Filter Shipments</h2>
-          <button onClick={onClose} className="text-[#c6c6c6] hover:text-[#f4f4f4] transition-transform hover:rotate-90 duration-300">
+        <div className="px-6 py-4 border-b border-[var(--border-1)] flex justify-between items-center">
+          <h2 className="text-[18px] font-semibold text-[var(--text-primary)]">Filter Shipments</h2>
+          <button onClick={onClose} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-transform hover:rotate-90 duration-300">
             <X size={20} />
           </button>
         </div>
@@ -56,7 +58,7 @@ const ShipmentsFilterPanel: React.FC<ShipmentsFilterPanelProps> = ({ isOpen, onC
                 </select>
             </div>
             
-            <div className="h-[1px] bg-[#393939]"></div>
+            <div className="h-[1px] bg-[var(--border-1)]"></div>
 
             {/* Carrier */}
              <div className="opacity-0 animate-slide-up-fade" style={{ animationDelay: '100ms' }}>
@@ -75,14 +77,14 @@ const ShipmentsFilterPanel: React.FC<ShipmentsFilterPanelProps> = ({ isOpen, onC
                 </select>
             </div>
 
-            <div className="h-[1px] bg-[#393939]"></div>
+            <div className="h-[1px] bg-[var(--border-1)]"></div>
 
             {/* Date Range */}
             <div className="opacity-0 animate-slide-up-fade" style={{ animationDelay: '150ms' }}>
                 <label className={labelStyle}>Date Range</label>
                 <div className="space-y-2">
                     {['Today', 'Last 7 Days', 'Last 30 Days'].map(range => (
-                        <label key={range} className="flex items-center gap-2 text-[14px] text-[#f4f4f4] cursor-pointer hover:opacity-80 transition-opacity">
+                        <label key={range} className="flex items-center gap-2 text-[14px] text-[var(--text-primary)] cursor-pointer hover:opacity-80 transition-opacity">
                             <input 
                                 type="radio"
                                 name="dateRange" 
@@ -93,7 +95,7 @@ const ShipmentsFilterPanel: React.FC<ShipmentsFilterPanelProps> = ({ isOpen, onC
                             {range}
                         </label>
                     ))}
-                    <label className="flex items-center gap-2 text-[14px] text-[#f4f4f4] cursor-pointer hover:opacity-80 transition-opacity">
+                    <label className="flex items-center gap-2 text-[14px] text-[var(--text-primary)] cursor-pointer hover:opacity-80 transition-opacity">
                             <input 
                                 type="radio"
                                 name="dateRange" 
@@ -108,13 +110,13 @@ const ShipmentsFilterPanel: React.FC<ShipmentsFilterPanelProps> = ({ isOpen, onC
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-[#393939] flex gap-4 bg-[#262626]">
+        <div className="p-6 border-t border-[var(--border-1)] flex gap-4 bg-[var(--bg-1)]">
             <button 
                 onClick={() => {
                     setTempFilters(INITIAL_SHIPMENT_FILTERS);
                     onClear();
                 }}
-                className="flex-1 h-[48px] bg-[#393939] text-[#f4f4f4] hover:bg-[#4c4c4c] font-medium text-[14px] transition-colors hover:scale-[1.02] active:scale-[0.98] duration-150"
+                className="flex-1 h-[48px] bg-[var(--bg-2)] text-[var(--text-primary)] hover:bg-[var(--bg-hover)] font-medium text-[14px] transition-colors hover:scale-[1.02] active:scale-[0.98] duration-150"
             >
                 Clear All
             </button>

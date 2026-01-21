@@ -31,11 +31,12 @@ interface ShipmentAPIResponse {
   page?: number;
   pages?: number; // total pages
   data: {
-    _id: string;
+    _id: string; // MongoDB internal ID
     shipmentId: string;
     shipmentName: string;
     shipmentContents?: Array<{ sku: string; asin: string; quantity: number; _id: string }>;
     packingLines?: Array<{ // Assuming API returns this structure, even if empty
+      _id?: string; // Add optional _id for backend-provided ID
       boxCount: number;
       dimensions: {
         length: number;
@@ -52,16 +53,25 @@ interface ShipmentAPIResponse {
     updatedAt: string;
     isPriority?: boolean; // Assume API might return this
     priorityIndex?: number; // Assume API might return this
+    shippingLabels?: Array<{ // Include shipping labels in API response type
+      _id: string;
+      fileName: string;
+      fileUrl: string;
+      appliesTo: string[];
+      uploadedAt: string;
+    }>;
   }[];
 }
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 1000; // 1 second
 
-export const useShipments = (refreshKey: number = 0) => { // Accept refreshKey as a prop
-  const [allLiveShipments, setAllLiveShipments] = useState<Shipment[]>([]);
+export const useShipments = (externalRefreshKey: number = 0) => { // Accept refreshKey as a prop
+  const [allLiveShipments, setAllLiveShipments] = useState<Shipment[]>([]
+);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [internalRefreshCounter, setInternalRefreshCounter] = useState(0); // New: Internal state to trigger manual refresh
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All Statuses');
@@ -82,8 +92,16 @@ export const useShipments = (refreshKey: number = 0) => { // Accept refreshKey a
       try {
         const response = await fetch('https://kv-fba-api.onrender.com/api/shipments');
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-          throw new Error(errorData.message || 'Failed to fetch shipments');
+          const errorText = await response.text(); // Get raw text first
+          let errorMessage = `Server responded with status ${response.status}`;
+          try {
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.message || errorMessage;
+          } catch {
+            // If JSON parsing fails, use the raw text or default message
+            errorMessage = errorText || errorMessage;
+          }
+          throw new Error(errorMessage);
         }
         const apiResponse: ShipmentAPIResponse = await response.json();
 
@@ -91,8 +109,7 @@ export const useShipments = (refreshKey: number = 0) => { // Accept refreshKey a
         const mappedShipments: Shipment[] = apiResponse.data.map(apiShipment => {
           const totalItems = apiShipment.shipmentContents?.reduce((sum, item) => sum + item.quantity, 0) || 0;
           return {
-            id: apiShipment._id,
-            shipmentId: apiShipment.shipmentId,
+            shipmentId: apiShipment.shipmentId, // Use shipmentId as the primary identifier
             name: apiShipment.shipmentName,
             destination: "FBA Warehousing & Distribution", // Fixed text as per prompt
             originWarehouse: "Main Warehouse",   // Placeholder as per prompt
@@ -108,6 +125,7 @@ export const useShipments = (refreshKey: number = 0) => { // Accept refreshKey a
               asin: content.asin, // Include ASIN
             })),
             packingLines: (apiShipment.packingLines || []).map(pl => ({ // Map packing lines
+              id: pl._id!, // Ensure each packing line has an ID, strictly from _id
               boxCount: pl.boxCount,
               dimensions: pl.dimensions,
               weight: pl.weight,
@@ -116,6 +134,13 @@ export const useShipments = (refreshKey: number = 0) => { // Accept refreshKey a
             })),
             isPriority: apiShipment.isPriority || false, // Default to false if not provided
             priorityIndex: apiShipment.priorityIndex, // Keep undefined if not provided
+            shippingLabels: (apiShipment.shippingLabels || []).map(label => ({ // Map shipping labels
+              id: label._id,
+              fileName: label.fileName,
+              fileUrl: label.fileUrl,
+              appliesTo: label.appliesTo,
+              uploadedAt: label.uploadedAt,
+            })),
           };
         });
         setAllLiveShipments(mappedShipments);
@@ -134,7 +159,7 @@ export const useShipments = (refreshKey: number = 0) => { // Accept refreshKey a
     };
 
     fetchAllShipments();
-  }, [refreshKey]); // Add refreshKey to dependency array
+  }, [externalRefreshKey, internalRefreshCounter]); // Add both external and internal refresh keys to dependency array
 
   // Reset page on filter or search query change (client-side pagination is applied to filtered/sorted data)
   useEffect(() => {
@@ -237,6 +262,11 @@ export const useShipments = (refreshKey: number = 0) => { // Accept refreshKey a
     setSortConfig({ key: direction ? key : null, direction });
   };
 
+  const refresh = () => {
+    setInternalRefreshCounter(prev => prev + 1);
+  };
+
+
   return {
     allShipments: allLiveShipments, // Expose all fetched shipments if needed
     paginatedShipments,
@@ -262,5 +292,6 @@ export const useShipments = (refreshKey: number = 0) => { // Accept refreshKey a
 
     isLoading,
     error,
+    refresh, // New: Expose refresh function
   };
 };

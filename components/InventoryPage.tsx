@@ -1,3 +1,5 @@
+
+
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import DashboardCard from './DashboardCard';
 import { Calendar, Package, Truck, Boxes, TrendingUp, Info, ArrowRight } from 'lucide-react';
@@ -10,23 +12,23 @@ interface InventoryPageProps {
 
 // Reusing DASHBOARD_MOCK_SHIPMENTS from DashboardPage for consistency
 const DASHBOARD_MOCK_SHIPMENTS: Shipment[] = [
-  { id: '1', shipmentId: 'SHP-1', name: 'S1', destination: 'D1', originWarehouse: 'W1', totalItems: 120, carrier: 'UPS', status: 'In Progress', createdDate: '2025-05-12T10:00:00', lastUpdated: '', items: [{ sku: 'WH-001', name: 'Wireless Headphones', quantity: 50, asin: 'B0WH001XXX' }, { sku: 'EM-202', name: 'Ergonomic Mouse', quantity: 70, asin: 'B0EM202XXX' }] },
-  { id: '2', shipmentId: 'SHP-2', name: 'S2', destination: 'D2', originWarehouse: 'W1', totalItems: 450, carrier: 'FedEx', status: 'Shipped', createdDate: '2025-05-10T10:00:00', lastUpdated: '', items: [{ sku: 'LS-303', name: 'Laptop Stand', quantity: 200, asin: 'B0LS303XXX' }, { sku: 'CB-101', name: 'USB-C Cable (2m)', quantity: 250, asin: 'B0CB101XXX' }] },
-  { id: '3', shipmentId: 'SHP-3', name: 'S3', destination: 'D3', originWarehouse: 'W1', totalItems: 15, carrier: 'DHL', status: 'Delivered', createdDate: '2025-05-08T10:00:00', lastUpdated: '', items: [{ sku: 'MK-550', name: 'Mechanical Keyboard', quantity: 15, asin: 'B0MK550XXX' }] },
-  { id: '4', shipmentId: 'SHP-4', name: 'S4', destination: 'D4', originWarehouse: 'W1', totalItems: 200, carrier: 'UPS', status: 'Draft', createdDate: '2025-05-14T10:00:00', lastUpdated: '', items: [{ sku: 'MA-800', name: 'Monitor Arm', quantity: 100, asin: 'B0MA800XXX' }, { sku: 'WC-400', name: 'Webcam 4K', quantity: 100, asin: 'B0WC400XXX' }] },
-  { id: '5', shipmentId: 'SHP-5', name: 'S5', destination: 'D5', originWarehouse: 'W1', totalItems: 5, carrier: 'USPS', status: 'Cancelled', createdDate: '2025-05-05T10:00:00', lastUpdated: '', items: [{ sku: 'DM-012', name: 'Desk Mat', quantity: 5, asin: 'B0DM012XXX' }] },
-  { id: '6', shipmentId: 'S6', name: 'S6', destination: 'D6', originWarehouse: 'W1', totalItems: 1200, carrier: 'Maersk', status: 'In Progress', createdDate: '2025-05-13T10:00:00', lastUpdated: '', items: [{ sku: 'LG-900', name: 'Gaming Monitor 27"', quantity: 1200, asin: 'B0LG900XXX' }] },
-  { id: '7', shipmentId: 'S7', name: 'S7', destination: 'D7', originWarehouse: 'W1', totalItems: 50, carrier: 'Internal', status: 'Shipped', createdDate: '2025-05-12T10:00:00', lastUpdated: '', items: [{ sku: 'SP-101', name: 'Smart Plug', quantity: 50, asin: 'B0SP101XXX' }] },
-  { id: '8', shipmentId: 'S8', name: 'S8', destination: 'D8', originWarehouse: 'W1', totalItems: 240, carrier: 'FedEx', status: 'Delivered', createdDate: '2025-05-01T10:00:00', lastUpdated: '', items: [{ sku: 'EM-202', name: 'Ergonomic Mouse', quantity: 240, asin: 'B0EM202XXX' }] },
-  { id: '9', shipmentId: 'SHP-9', name: 'S9', destination: 'D9', originWarehouse: 'W1', totalItems: 0, carrier: 'UPS', status: 'Draft', createdDate: '2025-05-15T10:00:00', lastUpdated: '' },
-  { id: '10', shipmentId: 'SHP-10', name: 'S10', destination: 'D10', originWarehouse: 'W1', totalItems: 300, carrier: 'UPS', status: 'Shipped', createdDate: '2025-04-28T10:00:00', lastUpdated: '', items: [{ sku: 'WH-001', name: 'Wireless Headphones', quantity: 150, asin: 'B0WH001XXX' }, { sku: 'LS-303', name: 'Laptop Stand', quantity: 150, asin: 'B0LS303XXX' }] },
-  { id: '11', shipmentId: 'S11-WH001', name: 'S11-WH001', destination: 'D11', originWarehouse: 'W1', totalItems: 10, carrier: 'FedEx', status: 'Shipped', createdDate: '2025-04-25T10:00:00', lastUpdated: '', items: [{ sku: 'WH-001', name: 'Wireless Headphones', quantity: 10, asin: 'B0WH001XXX' }] },
-  { id: '11B', shipmentId: 'S11-EM202', name: 'S11-EM202', destination: 'D11', originWarehouse: 'W1', totalItems: 5, carrier: 'FedEx', status: 'Shipped', createdDate: '2025-04-25T10:00:00', lastUpdated: '', items: [{ sku: 'EM-202', name: 'Ergonomic Mouse', quantity: 5, asin: 'B0EM202XXX' }] },
-  { id: '12', shipmentId: 'S12', name: 'S12', destination: 'D12', originWarehouse: 'W1', totalItems: 500, carrier: 'DHL', status: 'Shipped', createdDate: '2025-04-20T10:00:00', lastUpdated: '', items: [{ sku: 'CB-101', name: 'USB-C Cable (2m)', quantity: 500, asin: 'B0CB101XXX' }] },
-  { id: '13', shipmentId: 'S13', name: 'S13', destination: 'D13', originWarehouse: 'W1', totalItems: 150, carrier: 'UPS', status: 'Shipped', createdDate: '2025-05-09T10:00:00', lastUpdated: '', items: [{ sku: 'DM-012', name: 'Desk Mat', quantity: 100, asin: 'B0DM012XXX' }, { sku: 'SP-101', name: 'Smart Plug', quantity: 50, asin: 'B0SP101XXX' }] },
-  { id: '14', shipmentId: 'S14', name: 'S14', destination: 'D14', originWarehouse: 'W1', totalItems: 250, carrier: 'FedEx', status: 'Shipped', createdDate: '2025-05-07T10:00:00', lastUpdated: '', items: [{ sku: 'LS-303', name: 'Laptop Stand', quantity: 250, asin: 'B0LS303XXX' }] },
-  { id: '15', shipmentId: 'S15', name: 'S15', destination: 'D15', originWarehouse: 'W1', totalItems: 75, carrier: 'DHL', status: 'Delivered', createdDate: '2025-05-06T10:00:00', lastUpdated: '', items: [{ sku: 'MA-800', name: 'Monitor Arm', quantity: 75, asin: 'B0MA800XXX' }] },
-  { id: '16', shipmentId: 'S16', name: 'S16', destination: 'D16', originWarehouse: 'W1', totalItems: 180, carrier: 'USPS', status: 'Shipped', createdDate: '2025-05-04T10:00:00', lastUpdated: '', items: [{ sku: 'WC-400', name: 'Webcam 4K', quantity: 180, asin: 'B0WC400XXX' }] }
+  { shipmentId: 'SHP-1', name: 'S1', destination: 'D1', originWarehouse: 'W1', totalItems: 120, carrier: 'UPS', status: 'In Progress', createdDate: '2025-05-12T10:00:00', lastUpdated: '', items: [{ sku: 'WH-001', name: 'Wireless Headphones', quantity: 50, asin: 'B0WH001XXX' }, { sku: 'EM-202', name: 'Ergonomic Mouse', quantity: 70, asin: 'B0EM202XXX' }] },
+  { shipmentId: 'SHP-2', name: 'S2', destination: 'D2', originWarehouse: 'W1', totalItems: 450, carrier: 'FedEx', status: 'Shipped', createdDate: '2025-05-10T10:00:00', lastUpdated: '', items: [{ sku: 'LS-303', name: 'Laptop Stand', quantity: 200, asin: 'B0LS303XXX' }, { sku: 'CB-101', name: 'USB-C Cable (2m)', quantity: 250, asin: 'B0CB101XXX' }] },
+  { shipmentId: 'SHP-3', name: 'S3', destination: 'D3', originWarehouse: 'W1', totalItems: 15, carrier: 'DHL', status: 'Delivered', createdDate: '2025-05-08T10:00:00', lastUpdated: '', items: [{ sku: 'MK-550', name: 'Mechanical Keyboard', quantity: 15, asin: 'B0MK550XXX' }] },
+  { shipmentId: 'SHP-4', name: 'S4', destination: 'D4', originWarehouse: 'W1', totalItems: 200, carrier: 'UPS', status: 'Draft', createdDate: '2025-05-14T10:00:00', lastUpdated: '', items: [{ sku: 'MA-800', name: 'Monitor Arm', quantity: 100, asin: 'B0MA800XXX' }, { sku: 'WC-400', name: 'Webcam 4K', quantity: 100, asin: 'B0WC400XXX' }] },
+  { shipmentId: 'SHP-5', name: 'S5', destination: 'D5', originWarehouse: 'W1', totalItems: 5, carrier: 'USPS', status: 'Cancelled', createdDate: '2025-05-05T10:00:00', lastUpdated: '', items: [{ sku: 'DM-012', name: 'Desk Mat', quantity: 5, asin: 'B0DM012XXX' }] },
+  { shipmentId: 'S6', name: 'S6', destination: 'D6', originWarehouse: 'W1', totalItems: 1200, carrier: 'Maersk', status: 'In Progress', createdDate: '2025-05-13T10:00:00', lastUpdated: '', items: [{ sku: 'LG-900', name: 'Gaming Monitor 27"', quantity: 1200, asin: 'B0LG900XXX' }] },
+  { shipmentId: 'S7', name: 'S7', destination: 'D7', originWarehouse: 'W1', totalItems: 50, carrier: 'Internal', status: 'Shipped', createdDate: '2025-05-12T10:00:00', lastUpdated: '', items: [{ sku: 'SP-101', name: 'Smart Plug', quantity: 50, asin: 'B0SP101XXX' }] },
+  { shipmentId: 'S8', name: 'S8', destination: 'D8', originWarehouse: 'W1', totalItems: 240, carrier: 'FedEx', status: 'Delivered', createdDate: '2025-05-01T10:00:00', lastUpdated: '', items: [{ sku: 'EM-202', name: 'Ergonomic Mouse', quantity: 240, asin: 'B0EM202XXX' }] },
+  { shipmentId: 'SHP-9', name: 'S9', destination: 'D9', originWarehouse: 'W1', totalItems: 0, carrier: 'UPS', status: 'Draft', createdDate: '2025-05-15T10:00:00', lastUpdated: '' },
+  { shipmentId: 'SHP-10', name: 'S10', destination: 'D10', originWarehouse: 'W1', totalItems: 300, carrier: 'UPS', status: 'Shipped', createdDate: '2025-04-28T10:00:00', lastUpdated: '', items: [{ sku: 'WH-001', name: 'Wireless Headphones', quantity: 150, asin: 'B0WH001XXX' }, { sku: 'LS-303', name: 'Laptop Stand', quantity: 150, asin: 'B0LS303XXX' }] },
+  { shipmentId: 'S11-WH001', name: 'S11-WH001', destination: 'D11', originWarehouse: 'W1', totalItems: 10, carrier: 'FedEx', status: 'Shipped', createdDate: '2025-04-25T10:00:00', lastUpdated: '', items: [{ sku: 'WH-001', name: 'Wireless Headphones', quantity: 10, asin: 'B0WH001XXX' }] },
+  { shipmentId: 'S11-EM202', name: 'S11-EM202', destination: 'D11', originWarehouse: 'W1', totalItems: 5, carrier: 'FedEx', status: 'Shipped', createdDate: '2025-04-25T10:00:00', lastUpdated: '', items: [{ sku: 'EM-202', name: 'Ergonomic Mouse', quantity: 5, asin: 'B0EM202XXX' }] },
+  { shipmentId: 'S12', name: 'S12', destination: 'D12', originWarehouse: 'W1', totalItems: 500, carrier: 'DHL', status: 'Shipped', createdDate: '2025-04-20T10:00:00', lastUpdated: '', items: [{ sku: 'CB-101', name: 'USB-C Cable (2m)', quantity: 500, asin: 'B0CB101XXX' }] },
+  { shipmentId: 'S13', name: 'S13', destination: 'D13', originWarehouse: 'W1', totalItems: 150, carrier: 'UPS', status: 'Shipped', createdDate: '2025-05-09T10:00:00', lastUpdated: '', items: [{ sku: 'DM-012', name: 'Desk Mat', quantity: 100, asin: 'B0DM012XXX' }, { sku: 'SP-101', name: 'Smart Plug', quantity: 50, asin: 'B0SP101XXX' }] },
+  { shipmentId: 'S14', name: 'S14', destination: 'D14', originWarehouse: 'W1', totalItems: 250, carrier: 'FedEx', status: 'Shipped', createdDate: '2025-05-07T10:00:00', lastUpdated: '', items: [{ sku: 'LS-303', name: 'Laptop Stand', quantity: 250, asin: 'B0LS303XXX' }] },
+  { shipmentId: 'S15', name: 'S15', destination: 'D15', originWarehouse: 'W1', totalItems: 75, carrier: 'DHL', status: 'Delivered', createdDate: '2025-05-06T10:00:00', lastUpdated: '', items: [{ sku: 'MA-800', name: 'Monitor Arm', quantity: 75, asin: 'B0MA800XXX' }] },
+  { shipmentId: 'S16', name: 'S16', destination: 'D16', originWarehouse: 'W1', totalItems: 180, carrier: 'USPS', status: 'Shipped', createdDate: '2025-05-04T10:00:00', lastUpdated: '2025-05-04T10:00:00', items: [{ sku: 'WC-400', name: 'Webcam 4K', quantity: 180, asin: 'B0WC400XXX' }] }
 ];
 
 interface TooltipData {
@@ -37,7 +39,7 @@ interface TooltipData {
   products: number; // For Inventory Movement: Products shipped
 }
 
-const InventoryPage: React.FC<InventoryPageProps> = ({ onNavigate }) => {
+const InventoryOverviewPage: React.FC<InventoryPageProps> = ({ onNavigate }) => {
   const [dateRange, setDateRange] = useState('Last 30 Days');
   const [isDateDropdownOpen, setIsDateDropdownOpen] = useState(false);
   const dateDropdownRef = useRef<HTMLDivElement>(null);
@@ -250,8 +252,8 @@ const InventoryPage: React.FC<InventoryPageProps> = ({ onNavigate }) => {
       {/* Header & Date Selector */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 animate-slide-up-fade" style={{ animationDelay: '0ms' }}>
         <div>
-          <h1 className="text-[24px] font-bold text-[#f4f4f4]">Inventory</h1>
-          <p className="text-[14px] text-[#c6c6c6]">High-level view of all product activity.</p>
+          <h1 className="text-[24px] font-bold text-[#f4f4f4]">Inventory Overview</h1>
+          <p className="text-[14px] text-[#c6c6c6]">Comprehensive view of your inventory movement and status.</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -264,7 +266,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({ onNavigate }) => {
               {dateRange}
             </button>
             {isDateDropdownOpen && (
-              <div className="absolute top-full right-0 w-[200px] bg-[#262626] border border-[#393939] shadow-xl z-[var(--z-dropdown)] animate-drop-down origin-top-right">
+              <div className="absolute top-full right-0 w-[200px] bg-[#262626] border border-[#393939] shadow-xl z-50 animate-fade-in-fast origin-top-right">
                 {['Today', 'Last 7 Days', 'Last 30 Days', 'Year to Date'].map((opt, idx) => (
                   <div
                     key={opt}
@@ -283,22 +285,6 @@ const InventoryPage: React.FC<InventoryPageProps> = ({ onNavigate }) => {
           </div>
         </div>
       </div>
-
-      {/* CTA Block: Go to Products */}
-      <div className="bg-[#262626] border border-[#393939] p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6 animate-slide-up-fade" style={{ animationDelay: '50ms' }}>
-        <div>
-          <h3 className="text-[18px] font-bold text-[#f4f4f4]">Go to Products</h3>
-          <p className="text-[14px] text-[#c6c6c6] mt-1">View and manage all product listings and SKUs.</p>
-        </div>
-        <button 
-          onClick={() => onNavigate('items')}
-          className="h-[40px] px-6 bg-[#0f62fe] hover:bg-[#0353e9] text-white text-[14px] font-medium flex items-center gap-2 whitespace-nowrap transition-all duration-200 shadow-lg shadow-[#0f62fe]/10 hover:shadow-[#0f62fe]/20"
-        >
-          View Products <ArrowRight size={16} />
-        </button>
-      </div>
-
-      <div className="w-full border-t border-[#393939] mb-6 animate-fade-in-fast" style={{ animationDelay: '75ms' }} />
 
       {/* Summary Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
@@ -465,4 +451,4 @@ const InventoryPage: React.FC<InventoryPageProps> = ({ onNavigate }) => {
   );
 };
 
-export default InventoryPage;
+export default InventoryOverviewPage;

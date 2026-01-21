@@ -59,7 +59,7 @@ const ItemsPaginationFooter: React.FC<ItemsPaginationFooterProps> = ({
   };
 
   return (
-    <div className="p-3 md:p-2 border-t border-[#393939] bg-[#262626] text-[12px] text-[#8d8d8d] flex flex-wrap justify-center md:justify-between items-center shrink-0 gap-4 md:gap-0">
+    <div className="p-3 md:p-2 border-t border-[var(--border-1)] bg-[var(--bg-1)] text-[12px] text-[var(--text-tertiary)] flex flex-wrap justify-center md:justify-between items-center shrink-0 gap-4 md:gap-0">
       <div className="flex items-center gap-4">
         <span>
           Showing {totalItems > 0 ? startIndex + 1 : 0}-{endIndex} of {totalItems} items
@@ -70,20 +70,20 @@ const ItemsPaginationFooter: React.FC<ItemsPaginationFooterProps> = ({
         <div className="relative" ref={perPageDropdownRef}>
           <button
             onClick={() => setIsPerPageDropdownOpen(!isPerPageDropdownOpen)}
-            className="flex items-center gap-2 hover:text-[#f4f4f4] transition-colors"
+            className="flex items-center gap-2 hover:text-[var(--text-primary)] transition-colors"
           >
             <span>Show {itemsPerPage} results / page</span>
             <ChevronDown size={14} />
           </button>
 
           {isPerPageDropdownOpen && (
-            <div className="absolute bottom-full mb-1 right-0 w-[200px] bg-[#262626] border border-[#393939] shadow-xl z-[var(--z-dropdown)] py-1 animate-drop-down origin-bottom-right">
+            <div className="absolute bottom-full mb-1 right-0 w-[200px] bg-[var(--bg-1)] border border-[var(--border-1)] shadow-xl z-[var(--z-dropdown)] py-1 animate-drop-down origin-bottom-right">
               {[10, 50, 100, 250].map(count => (
                 <button
                   key={count}
                   onClick={() => { onItemsPerPageChange(count); setIsPerPageDropdownOpen(false); }}
-                  className={`w-full text-left px-4 py-2 hover:bg-[#393939] flex items-center justify-between
-                                            ${itemsPerPage === count ? 'text-[#f4f4f4] bg-[#393939]' : 'text-[#c6c6c6]'}
+                  className={`w-full text-left px-4 py-2 hover:bg-[var(--bg-2)] flex items-center justify-between
+                                            ${itemsPerPage === count ? 'text-[var(--text-primary)] bg-[var(--bg-2)]' : 'text-[var(--text-secondary)]'}
                                         `}
                 >
                   <span>Show {count} results / page</span>
@@ -95,10 +95,10 @@ const ItemsPaginationFooter: React.FC<ItemsPaginationFooterProps> = ({
         </div>
 
         <div className="flex items-center gap-1">
-          <button onClick={() => onPageChange(1)} disabled={currentPage === 1} className="p-2 text-[#c6c6c6] hover:bg-[#393939] hover:text-[#f4f4f4] disabled:opacity-30 disabled:cursor-not-allowed">
+          <button onClick={() => onPageChange(1)} disabled={currentPage === 1} className="p-2 text-[var(--text-secondary)] hover:bg-[var(--bg-2)] hover:text-[var(--text-primary)] disabled:opacity-30 disabled:cursor-not-allowed">
             <ChevronsLeft size={16} />
           </button>
-          <button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1} className="p-2 text-[#c6c6c6] hover:bg-[#393939] hover:text-[#f4f4f4] disabled:opacity-30 disabled:cursor-not-allowed">
+          <button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1} className="p-2 text-[var(--text-secondary)] hover:bg-[var(--bg-2)] hover:text-[var(--text-primary)] disabled:opacity-30 disabled:cursor-not-allowed">
             <ChevronLeft size={16} />
           </button>
 
@@ -109,15 +109,15 @@ const ItemsPaginationFooter: React.FC<ItemsPaginationFooterProps> = ({
               onChange={(e) => setPageInput(e.target.value)}
               onBlur={handlePageInputCommit}
               onKeyDown={handlePageInputKeyDown}
-              className="w-[40px] h-[32px] bg-[#161616] border border-[#393939] text-[#f4f4f4] text-center text-[12px] focus:outline-none focus:border-[#0f62fe]"
+              className="w-[40px] h-[32px] bg-[var(--bg-0)] border border-[var(--border-1)] text-[var(--text-primary)] text-center text-[12px] focus:outline-none focus:border-[#0f62fe]"
             />
-            <span className="ml-2 text-[#8d8d8d]">of {totalPages}</span>
+            <span className="ml-2 text-[var(--text-tertiary)]">of {totalPages}</span>
           </div>
 
-          <button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages} className="p-2 text-[#c6c6c6] hover:bg-[#393939] hover:text-[#f4f4f4] disabled:opacity-30 disabled:cursor-not-allowed">
+          <button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages} className="p-2 text-[var(--text-secondary)] hover:bg-[var(--bg-2)] hover:text-[var(--text-primary)] disabled:opacity-30 disabled:cursor-not-allowed">
             <ChevronRight size={16} />
           </button>
-          <button onClick={() => onPageChange(totalPages)} disabled={currentPage === totalPages} className="p-2 text-[#c6c6c6] hover:bg-[#393939] hover:text-[#f4f4f4] disabled:opacity-30 disabled:cursor-not-allowed">
+          <button onClick={() => onPageChange(totalPages)} disabled={currentPage === totalPages} className="p-2 text-[var(--text-secondary)] hover:bg-[var(--bg-2)] hover:text-[var(--text-primary)] disabled:opacity-30 disabled:cursor-not-allowed">
             <ChevronsRight size={16} />
           </button>
         </div>

@@ -1,6 +1,4 @@
-
-
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { X, Plus, Trash, AlertCircle, Package, Info, ChevronDown, ChevronUp, CheckCircle2, Loader2 } from 'lucide-react';
 import { Shipment, ShipmentItem, BoxType, PackingLine } from '../../types';
 import { updateShipmentPacking } from '../../api/shipments'; // Import the new API function
@@ -15,7 +13,7 @@ interface PackShipmentPanelProps {
 
 // Internal state interface allowing empty strings for inputs
 interface BoxTypeState {
-  id: string;
+  id: string; // Will be pl._id for existing, or temp ID for new
   boxCount: number | '';
   length: number | '';
   width: number | '';
@@ -31,6 +29,7 @@ const PackShipmentPanel: React.FC<PackShipmentPanelProps> = ({ isOpen, onClose, 
   const [errors, setErrors] = useState<Record<string, string>>({}); // Critical errors that block save
   const [infoMessage, setInfoMessage] = useState<string | null>(null); // Warnings that don't block save
   const [isSaving, setIsSaving] = useState(false); // New: Saving state
+  const nextTempBoxId = useRef(0); // For generating temporary IDs for new boxes
 
   // Initialize with one box type when opening
   useEffect(() => {
@@ -38,7 +37,7 @@ const PackShipmentPanel: React.FC<PackShipmentPanelProps> = ({ isOpen, onClose, 
       // If shipment has existing packing lines, initialize with them
       if (shipment?.packingLines && shipment.packingLines.length > 0) {
         setBoxTypes(shipment.packingLines.map((pl, idx) => ({
-          id: crypto.randomUUID(), // Generate new IDs for state management
+          id: pl.id, // Strictly use pl._id from backend (mapped to pl.id in useShipments)
           boxCount: pl.boxCount,
           length: pl.dimensions.length,
           width: pl.dimensions.width,
@@ -49,7 +48,10 @@ const PackShipmentPanel: React.FC<PackShipmentPanelProps> = ({ isOpen, onClose, 
         })));
         // Also try to infer totalPlannedBoxes from existing lines
         setTotalPlannedBoxes(shipment.packingLines.reduce((sum, pl) => sum + pl.boxCount, 0));
-      } else if (boxTypes.length === 0) { // Only add a default if no existing and no default added yet
+        nextTempBoxId.current = 0; // Reset counter when loading existing shipments
+      } else { // Only add a default if no existing
+        setBoxTypes([]); // Clear any previous state
+        nextTempBoxId.current = 0; // Reset counter
         addBoxType();
       }
       setErrors({});
@@ -60,12 +62,13 @@ const PackShipmentPanel: React.FC<PackShipmentPanelProps> = ({ isOpen, onClose, 
       setTotalPlannedBoxes('');
       setErrors({});
       setInfoMessage(null);
+      nextTempBoxId.current = 0; // Reset counter on close
     }
   }, [isOpen, shipment]);
 
   const addBoxType = () => {
     const newBoxType: BoxTypeState = {
-      id: crypto.randomUUID(),
+      id: `temp-${nextTempBoxId.current++}`, // Use temporary ID for new boxes
       boxCount: 1,
       length: '',
       width: '',
@@ -114,7 +117,9 @@ const PackShipmentPanel: React.FC<PackShipmentPanelProps> = ({ isOpen, onClose, 
     if (!items || items.length === 0) return true; // No items to assign
     return items.every(item => {
       const totalAssignedForSku = getAssignedUnits(item.sku);
-      return totalAssignedForSku === item.quantity;
+      // Fix: Ensure item.quantity is treated as a number for comparison
+      const itemQuantityNumeric = Number(item.quantity) || 0;
+      return totalAssignedForSku === itemQuantityNumeric;
     });
   }, [items, boxTypes]);
 
@@ -152,13 +157,14 @@ const PackShipmentPanel: React.FC<PackShipmentPanelProps> = ({ isOpen, onClose, 
 
     if (typeof newUnits === 'number') {
       const boxType = boxTypes.find(bt => bt.id === boxId);
-      const itemTotal = items.find(i => i.sku === sku)?.quantity || 0;
+      // Fix: Ensure itemTotal is always a number for arithmetic operations
+      const itemTotalNumeric = Number(items.find(i => i.sku === sku)?.quantity) || 0;
       
       if (boxType) {
         const boxCount = Number(boxType.boxCount) || 0;
         const totalNewContribution = boxCount * newUnits;
         const assignedElsewhere = getAssignedUnitsExcluding(sku, boxId);
-        const remainingForThisItem = itemTotal - assignedElsewhere;
+        const remainingForThisItem = itemTotalNumeric - assignedElsewhere;
 
         // Clamp the newUnits if it would exceed the total available for the item
         if (boxCount > 0 && totalNewContribution > remainingForThisItem) {
@@ -206,7 +212,7 @@ const PackShipmentPanel: React.FC<PackShipmentPanelProps> = ({ isOpen, onClose, 
 
 
   const handleSave = async () => {
-    if (!shipment?.id || !shipment?.shipmentId) {
+    if (!shipment?.shipmentId) { // Changed from shipment?.id
       setErrors({ global: 'Shipment ID is missing.' });
       return;
     }
@@ -280,6 +286,7 @@ const PackShipmentPanel: React.FC<PackShipmentPanelProps> = ({ isOpen, onClose, 
     try {
       // Map BoxTypeState to PackingLine for the API payload
       const actualPackingLines: PackingLine[] = boxTypes.map(bt => ({
+        id: bt.id, // Include the ID (will be _id for existing, temp-X for new)
         boxCount: Number(bt.boxCount) || 0, // Ensure numbers for API
         dimensions: {
           length: Number(bt.length) || 0,
@@ -292,8 +299,8 @@ const PackShipmentPanel: React.FC<PackShipmentPanelProps> = ({ isOpen, onClose, 
         unitsPerBox: Object.entries(bt.unitsPerProduct).map(([sku, quantity]) => ({ sku, quantity: Number(quantity) || 0 })),
       }));
 
-      // FIX: Use shipment.id (MongoDB _id) instead of shipment.shipmentId (human-readable ID)
-      const updatedShipment = await updateShipmentPacking(shipment.id, actualPackingLines, 'Packed');
+      // FIX: Use shipment.shipmentId (human-readable ID) instead of shipment.id (MongoDB _id)
+      const updatedShipment = await updateShipmentPacking(shipment.shipmentId, actualPackingLines, 'Packed');
       await onSave(updatedShipment); // Pass the updated shipment object up to the parent
       onClose(); // Close only on successful save
     } catch (err: any) {
@@ -306,21 +313,24 @@ const PackShipmentPanel: React.FC<PackShipmentPanelProps> = ({ isOpen, onClose, 
 
   if (!isOpen || !shipment) return null;
 
-  const inputStyle = "w-full h-[32px] bg-[#393939] border border-[#525252] text-[#f4f4f4] px-2 text-[13px] focus:outline-none focus:border-[#0f62fe] transition-colors rounded";
-  const labelStyle = "text-[11px] text-[#c6c6c6] uppercase tracking-wide mb-1 block";
+  const inputStyle = "w-full h-[32px] bg-[var(--bg-2)] border border-[var(--border-2)] text-[var(--text-primary)] px-2 text-[13px] focus:outline-none focus:border-[#0f62fe] transition-colors rounded";
+  const labelStyle = "text-[11px] text-[var(--text-secondary)] uppercase tracking-wide mb-1 block";
 
   return (
     <>
-      <div className="fixed inset-0 bg-[#161616]/60 z-[var(--z-modal-backdrop)] backdrop-blur-sm animate-fade-in-fast" onClick={onClose} />
-      <div className="fixed top-0 right-0 h-full w-full md:w-[600px] bg-[#212121] border-l border-[#393939] shadow-2xl z-[var(--z-modal)] flex flex-col animate-slide-in-right">
+      <div className="fixed inset-0 bg-[var(--overlay)] z-[var(--z-modal-backdrop)] backdrop-blur-sm animate-fade-in-fast" onClick={onClose} />
+      <div 
+        className="fixed right-0 w-full md:w-[600px] bg-[var(--bg-1)] border-l border-[var(--border-1)] shadow-2xl z-[var(--z-modal)] flex flex-col animate-slide-in-right"
+        style={{ top: '48px', height: 'calc(100vh - 96px)' }}
+      >
         
         {/* Header */}
-        <div className="px-6 py-4 border-b border-[#393939] flex justify-between items-center bg-[#262626]">
+        <div className="px-6 py-4 border-b border-[var(--border-1)] flex justify-between items-center bg-[var(--bg-1)]">
           <div>
-            <h2 className="text-[18px] font-semibold text-[#f4f4f4]">Pack Shipment</h2>
-            <p className="text-[12px] text-[#8d8d8d] font-mono">{shipment.shipmentId} • {shipment.name}</p>
+            <h2 className="text-[18px] font-semibold text-[var(--text-primary)]">Pack Shipment</h2>
+            <p className="text-[12px] text-[var(--text-tertiary)] font-mono">{shipment.shipmentId} • {shipment.name}</p>
           </div>
-          <button type="button" onClick={onClose} className="text-[#c6c6c6] hover:text-[#f4f4f4] transition-colors">
+          <button type="button" onClick={onClose} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
             <X size={20} />
           </button>
         </div>
@@ -329,8 +339,8 @@ const PackShipmentPanel: React.FC<PackShipmentPanelProps> = ({ isOpen, onClose, 
         <div className="flex-1 overflow-y-auto p-6 space-y-8">
             
             {/* Step 1: Total Boxes */}
-            <div className="bg-[#2a2a2a] p-4 rounded-lg border border-[#393939]">
-                <label htmlFor="totalPlannedBoxes" className="text-[14px] font-medium text-[#f4f4f4] mb-2 block">
+            <div className="bg-[var(--bg-2)] p-4 rounded-lg border border-[var(--border-1)]">
+                <label htmlFor="totalPlannedBoxes" className="text-[14px] font-medium text-[var(--text-primary)] mb-2 block">
                     How many boxes are you using for this shipment?
                 </label>
                 <div className="flex items-center gap-4">
@@ -348,7 +358,7 @@ const PackShipmentPanel: React.FC<PackShipmentPanelProps> = ({ isOpen, onClose, 
                                 return newErrors;
                             });
                         }}
-                        className="h-[40px] w-[120px] bg-[#161616] border border-[#393939] text-[#f4f4f4] px-3 rounded focus:outline-none focus:border-[#0f62fe]"
+                        className="h-[40px] w-[120px] bg-[var(--bg-0)] border border-[var(--border-1)] text-[var(--text-primary)] px-3 rounded focus:outline-none focus:border-[#0f62fe]"
                         placeholder="e.g. 5"
                     />
                     {totalPlannedBoxes && (
@@ -369,16 +379,16 @@ const PackShipmentPanel: React.FC<PackShipmentPanelProps> = ({ isOpen, onClose, 
             {/* Step 2: Box Types */}
             <div>
                 <div className="flex justify-between items-end mb-3">
-                    <h3 className="text-[16px] font-semibold text-[#e0e0e0]">Box Types</h3>
-                    <div className="text-[12px] text-[#8d8d8d]">
-                        Total defined: <span className={totalPlannedBoxes !== '' && currentTotalBoxes !== totalPlannedBoxes ? 'text-[#ff8389] font-bold' : 'text-[#f4f4f4] font-bold'}>{currentTotalBoxes}</span>
-                        {totalPlannedBoxes !== '' && <span className="text-[#525252]"> / {totalPlannedBoxes}</span>}
+                    <h3 className="text-[16px] font-semibold text-[var(--text-primary)]">Box Types</h3>
+                    <div className="text-[12px] text-[var(--text-tertiary)]">
+                        Total defined: <span className={totalPlannedBoxes !== '' && currentTotalBoxes !== totalPlannedBoxes ? 'text-[#ff8389] font-bold' : 'text-[var(--text-primary)] font-bold'}>{currentTotalBoxes}</span>
+                        {totalPlannedBoxes !== '' && <span className="text-[var(--text-secondary)]"> / {totalPlannedBoxes}</span>}
                     </div>
                 </div>
 
                 {/* Auto-adjust Info / General Warning Toast */}
                 {(infoMessage || (!isAllItemsAssigned && (infoMessage === null || !infoMessage.includes("Not all items")))) && (
-                    <div className="mb-4 p-3 bg-[#0f62fe]/10 border border-[#0f62fe]/30 text-[#a6c8ff] text-[13px] rounded flex items-start gap-2 animate-slide-up-fade">
+                    <div className="mb-4 p-3 bg-[#0f62fe]/10 border border-[#0f62fe]/30 text-[#0f62fe] blue-text-readable text-[13px] rounded flex items-start gap-2 animate-slide-up-fade">
                         <Info size={16} className="shrink-0 mt-0.5" />
                         {infoMessage || (!isAllItemsAssigned && "Warning: Not all items from the shipment are assigned to boxes.")}
                     </div>
@@ -386,10 +396,10 @@ const PackShipmentPanel: React.FC<PackShipmentPanelProps> = ({ isOpen, onClose, 
 
                 <div className="space-y-4">
                     {boxTypes.map((boxType, index) => (
-                        <div key={boxType.id} className="bg-[#2a2a2a] border border-[#393939] rounded-lg overflow-hidden transition-all duration-200">
+                        <div key={boxType.id} className="bg-[var(--bg-2)] border border-[var(--border-1)] rounded-lg overflow-hidden transition-all duration-200">
                             {/* Card Header */}
                             <div 
-                                className="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-[#333]"
+                                className="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-[var(--bg-hover)]"
                                 onClick={() => toggleExpand(boxType.id)}
                                 role="button"
                                 tabIndex={0}
@@ -397,9 +407,9 @@ const PackShipmentPanel: React.FC<PackShipmentPanelProps> = ({ isOpen, onClose, 
                                 aria-controls={`box-type-content-${boxType.id}`}
                             >
                                 <div className="flex items-center gap-3">
-                                    <span className="text-[14px] font-medium text-[#f4f4f4]">Box Type {index + 1}</span>
+                                    <span className="text-[14px] font-medium text-[var(--text-primary)]">Box Type {index + 1}</span>
                                     {boxType.boxCount !== '' && (
-                                        <span className="text-[12px] bg-[#393939] text-[#c6c6c6] px-2 py-0.5 rounded border border-[#525252]">
+                                        <span className="text-[12px] bg-[var(--bg-1)] text-[var(--text-secondary)] px-2 py-0.5 rounded border border-[var(--border-1)]">
                                             Qty: {boxType.boxCount}
                                         </span>
                                     )}
@@ -408,20 +418,20 @@ const PackShipmentPanel: React.FC<PackShipmentPanelProps> = ({ isOpen, onClose, 
                                      {boxTypes.length > 1 && (
                                         <button 
                                             onClick={(e) => { e.stopPropagation(); removeBoxType(boxType.id); }}
-                                            className="p-1.5 text-[#666] hover:text-[#ff8389] hover:bg-[#393939] rounded transition-colors"
+                                            className="p-1.5 text-[var(--text-secondary)] hover:text-[#ff8389] hover:bg-[var(--bg-1)] rounded transition-colors"
                                             type="button" // Important for buttons not to trigger form submission
                                             aria-label={`Remove Box Type ${index + 1}`}
                                         >
                                             <Trash size={14} />
                                         </button>
                                      )}
-                                     {boxType.isExpanded ? <ChevronUp size={16} className="text-[#8d8d8d]" /> : <ChevronDown size={16} className="text-[#8d8d8d]" />}
+                                     {boxType.isExpanded ? <ChevronUp size={16} className="text-[var(--text-tertiary)]" /> : <ChevronDown size={16} className="text-[var(--text-tertiary)]" />}
                                 </div>
                             </div>
 
                             {/* Card Body */}
                             {boxType.isExpanded && (
-                                <div id={`box-type-content-${boxType.id}`} role="region" className="p-4 border-t border-[#393939] bg-[#212121]">
+                                <div id={`box-type-content-${boxType.id}`} role="region" className="p-4 border-t border-[var(--border-1)] bg-[var(--bg-1)]">
                                     
                                     {/* Top Row: Count, Dims, Weight */}
                                     <div className="grid grid-cols-12 gap-4 mb-6">
@@ -485,23 +495,25 @@ const PackShipmentPanel: React.FC<PackShipmentPanelProps> = ({ isOpen, onClose, 
 
                                     {/* Products Table */}
                                     <div>
-                                        <label className={`${labelStyle} mb-2 border-b border-[#393939] pb-1 block`}>Units Per Box (For this box type)</label>
+                                        <label className={`${labelStyle} mb-2 border-b border-[var(--border-1)] pb-1 block`}>Units Per Box (For this box type)</label>
                                         <div className="space-y-3">
                                             {items.map(item => {
                                                 const assignedTotal = getAssignedUnits(item.sku);
-                                                const remaining = item.quantity - assignedTotal;
+                                                // Fix: Ensure item.quantity is treated as a number for arithmetic
+                                                const itemQuantityNumeric = Number(item.quantity) || 0;
+                                                const remaining = itemQuantityNumeric - assignedTotal;
                                                 const currentInThisBox = Number(boxType.unitsPerProduct[item.sku]) || 0;
                                                 
                                                 return (
                                                     <div key={item.sku} className="flex items-center justify-between text-[13px]">
                                                         <div className="flex-1 pr-4">
-                                                            <div className="text-[#f4f4f4] font-medium">{item.sku}</div>
-                                                            <div className="text-[11px] text-[#8d8d8d] truncate" title={item.name}>{item.name}</div>
+                                                            <div className="text-[var(--text-primary)] font-medium">{item.sku}</div>
+                                                            <div className="text-[11px] text-[var(--text-tertiary)] truncate" title={item.name}>{item.name}</div>
                                                         </div>
                                                         
-                                                        <div className="text-right mr-4 text-[11px] text-[#8d8d8d]">
+                                                        <div className="text-right mr-4 text-[11px] text-[var(--text-tertiary)]">
                                                             <div>Total: {item.quantity}</div>
-                                                            <div className={`${remaining < 0 ? 'text-[#ff8389]' : 'text-[#c6c6c6]'}`}>
+                                                            <div className={`${remaining < 0 ? 'text-[#ff8389]' : 'text-[var(--text-secondary)]'}`}>
                                                                 Remaining: {remaining}
                                                             </div>
                                                         </div>
@@ -512,8 +524,8 @@ const PackShipmentPanel: React.FC<PackShipmentPanelProps> = ({ isOpen, onClose, 
                                                                 min="0"
                                                                 value={boxType.unitsPerProduct[item.sku]}
                                                                 onChange={(e) => handleUnitsChange(boxType.id, item.sku, e.target.value)}
-                                                                className={`w-full h-[32px] bg-[#161616] border text-[#f4f4f4] text-center rounded focus:outline-none focus:border-[#0f62fe]
-                                                                    ${errors[`bt_${boxType.id}_units_${item.sku}`] ? 'border-[#ff8389]' : 'border-[#393939]'}
+                                                                className={`w-full h-[32px] bg-[var(--bg-0)] border text-[var(--text-primary)] text-center rounded focus:outline-none focus:border-[#0f62fe]
+                                                                    ${errors[`bt_${boxType.id}_units_${item.sku}`] ? 'border-[#ff8389]' : 'border-[var(--border-1)]'}
                                                                 `}
                                                                 aria-label={`Units for ${item.sku} in Box Type ${index + 1}`}
                                                                 aria-invalid={!!errors[`bt_${boxType.id}_units_${item.sku}`]}
@@ -545,10 +557,10 @@ const PackShipmentPanel: React.FC<PackShipmentPanelProps> = ({ isOpen, onClose, 
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-[#393939] bg-[#262626] flex justify-end gap-4">
+        <div className="p-6 border-t border-[var(--border-1)] bg-[var(--bg-1)] flex justify-end gap-4">
             <button 
                 onClick={onClose}
-                className="h-[48px] px-6 bg-[#393939] hover:bg-[#4c4c4c] text-[#f4f4f4] rounded-md font-medium text-[14px] transition-colors"
+                className="h-[48px] px-6 bg-[var(--bg-2)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] rounded-md font-medium text-[14px] transition-colors"
                 type="button" // Important for buttons not to trigger form submission
             >
                 Cancel

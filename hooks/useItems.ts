@@ -33,6 +33,7 @@ export const useItems = () => {
   const [totalApiItems, setTotalApiItems] = useState(0); // Total items from API (across all pages)
   const [isLoading, setIsLoading] = useState(true); // Added for loading state
   const [error, setError] = useState<string | null>(null); // Added for error state
+  const [refreshCounter, setRefreshCounter] = useState(0); // New: Internal state to trigger manual refresh
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All Statuses');
@@ -70,9 +71,10 @@ export const useItems = () => {
           status: "In Stock", // Default as per prompt
           lastUpdated: product.createdAt,
           price: 0,        // Default as per prompt
-          // NOTE: Fields like `asin`, `imageUrl`, `productDimensions`, `productWeight`, `weightUnit`
-          // are not mapped here because they are not part of the `InventoryItem` interface
-          // and modifying `types.ts` is disallowed by the prompt.
+          imageUrl: product.imageUrl, // Include imageUrl for display
+          productDimensions: product.productDimensions,
+          productWeight: product.productWeight,
+          weightUnit: product.weightUnit,
         }));
         setApiProducts(mappedItems);
         setTotalApiItems(response.total); // Use total from API for overall count
@@ -85,7 +87,7 @@ export const useItems = () => {
     };
 
     getProducts();
-  }, [currentPage, itemsPerPage, searchQuery]); // Re-fetch when these change
+  }, [currentPage, itemsPerPage, searchQuery, refreshCounter]); // Re-fetch when these change
 
   // Reset page on *client-side* filter change (searchQuery is handled by API fetch)
   useEffect(() => {
@@ -171,6 +173,10 @@ export const useItems = () => {
     setSortConfig({ key: direction ? key : null, direction });
   };
 
+  const refresh = () => {
+    setRefreshCounter(prev => prev + 1);
+  };
+
 
   return {
     // Original hook return values as specified in the prompt
@@ -197,5 +203,6 @@ export const useItems = () => {
     // Optional: expose loading and error for UI feedback, but not strictly required by prompt
     isLoading,
     error,
+    refresh, // New: Expose refresh function
   };
 };

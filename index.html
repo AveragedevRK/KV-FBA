@@ -17,22 +17,56 @@
         --z-modal-backdrop: 1290; /* Backdrop for modals/full-screen panels */
         --z-modal: 1300; /* Full modals, side panels that cover content */
         --z-toast: 1400; /* Toasts/notifications */
+        --z-splash: 9999; /* Initial loading screen */
+      }
+
+      /* Default Dark Theme Variables */
+      :root, .dark-theme {
+        --bg-0: #161616;
+        --bg-1: #262626; /* Cards, Panels */
+        --bg-2: #393939; /* Inputs, Headers */
+        --bg-3: #525252; /* Active/Selected */
+        --bg-hover: #4c4c4c;
+        --border-1: #393939; /* Subtle */
+        --border-2: #8d8d8d; /* Strong */
+        --text-primary: #f4f4f4;
+        --text-secondary: #c6c6c6;
+        --text-tertiary: #8d8d8d;
+        --overlay: rgba(22, 22, 22, 0.6);
+        --accent: #0f62fe;
+        --accent-hover: #0353e9;
+      }
+
+      /* Light Theme Variables */
+      .light-theme {
+        --bg-0: #ffffff;
+        --bg-1: #f4f4f4; /* Gray 10 */
+        --bg-2: #e0e0e0; /* Gray 20 */
+        --bg-3: #c6c6c6; /* Gray 30 */
+        --bg-hover: #d1d1d1;
+        --border-1: #e0e0e0;
+        --border-2: #8d8d8d;
+        --text-primary: #161616; /* Gray 100 */
+        --text-secondary: #525252; /* Gray 70 */
+        --text-tertiary: #6f6f6f; /* Gray 60 */
+        --overlay: rgba(22, 22, 22, 0.3);
       }
 
       body {
         font-family: 'IBM Plex Sans', sans-serif;
-        background-color: #161616; /* Gray 100 */
-        color: #f4f4f4; /* Text 01 */
+        background-color: var(--bg-0);
+        color: var(--text-primary);
+        transition: background-color 0.3s, color 0.3s;
       }
       /* Carbon-like custom utilities for Dark Theme */
       .carbon-input {
-        background-color: #393939; /* Gray 80 */
-        color: #f4f4f4;
-        border-bottom: 1px solid #8d8d8d;
+        background-color: var(--bg-2);
+        color: var(--text-primary);
+        border-bottom: 1px solid var(--border-2);
         transition: all 0.1s;
       }
       .carbon-input:focus {
-        outline: 2px solid #ffffff; /* Focus is often white in dark themes */
+        outline: 2px solid var(--text-primary); /* Focus is often white in dark themes */
         outline-offset: -2px;
       }
       .carbon-input.error {
@@ -44,6 +78,10 @@
       .blue-text-readable {
         text-shadow: 0 0 3px rgba(255, 255, 255, 0.15);
         font-weight: 500 !important;
+      }
+      
+      .light-theme .blue-text-readable {
+        text-shadow: none; /* Not needed on light bg */
       }
 
       @media (max-width: 768px) {
@@ -58,7 +96,39 @@
 
       /* ANIMATIONS */
       
-      /* 1. Slide Up Fade (for Cards/Rows) */
+      /* Shifting Gradient Text Animation */
+      @keyframes gradient-x {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+      }
+      .animate-gradient-text {
+        background: linear-gradient(90deg, #f4f4f4, #0f62fe, #0f62fe, #f4f4f4);
+        background-size: 200% 200%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: gradient-x 4s ease infinite;
+      }
+      .light-theme .animate-gradient-text {
+        background: linear-gradient(90deg, #161616, #0f62fe, #0f62fe, #161616);
+        background-size: 200% 200%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      /* Expanding Underline from Center */
+      @keyframes expand-underline-center {
+        0% { width: 0%; left: 50%; opacity: 0; }
+        100% { width: 100%; left: 0%; opacity: 1; }
+      }
+      .credit-underline-draw::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        height: 2px;
+        background: #0f62fe;
+        animation: expand-underline-center 0.8s cubic-bezier(0.2, 0, 0.38, 0.9) forwards;
+      }
+
       @keyframes slideUpFade {
         from {
           opacity: 0;
@@ -74,7 +144,6 @@
         animation: slideUpFade 0.4s cubic-bezier(0.2, 0, 0.38, 0.9) forwards;
       }
 
-      /* 2. Grow Height (for Charts) */
       @keyframes growHeight {
         from { height: 0; }
         to { height: var(--target-height); }
@@ -84,7 +153,6 @@
         animation: growHeight 1s cubic-bezier(0.2, 0, 0.38, 0.9) forwards;
       }
 
-      /* 3. Slide In Right (for Side Panels/Pages) */
       @keyframes slideInRight {
         from {
           opacity: 0;
@@ -100,7 +168,6 @@
         animation: slideInRight 0.3s cubic-bezier(0.2, 0, 0.38, 0.9) forwards;
       }
 
-      /* 4. Fade In */
       @keyframes fadeIn {
         from { opacity: 0; }
         to { opacity: 1; }
@@ -110,7 +177,6 @@
         animation: fadeIn 0.2s ease-out forwards;
       }
 
-      /* 5. Modal Zoom In */
       @keyframes modalZoom {
         from { opacity: 0; transform: scale(0.95); }
         to { opacity: 1; transform: scale(1); }
@@ -119,7 +185,6 @@
         animation: modalZoom 0.2s cubic-bezier(0.2, 0, 0.38, 0.9) forwards;
       }
       
-      /* 6. Slide Down (Dropdowns) */
       @keyframes dropDown {
         from { opacity: 0; transform: translateY(-10px); }
         to { opacity: 1; transform: translateY(0); }
@@ -128,13 +193,20 @@
         animation: dropDown 0.2s cubic-bezier(0.2, 0, 0.38, 0.9) forwards;
       }
 
-      /* 7. Slide Up (Drop-up Menus) */
       @keyframes slideUp {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
       }
       .animate-slide-up {
         animation: slideUp 0.2s cubic-bezier(0.2, 0, 0.38, 0.9) forwards;
+      }
+
+      @keyframes loadingProgress {
+        0% { width: 0%; }
+        100% { width: 100%; }
+      }
+      .animate-loading-bar {
+        animation: loadingProgress 2.2s ease-in-out forwards;
       }
 
       /* Helper to stagger animations */

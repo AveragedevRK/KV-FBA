@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Portal } from '../App'; // Import Portal from App.tsx
+import { useTheme } from '../contexts/ThemeContext';
 import { 
   Package, 
   Truck, 
@@ -13,7 +14,10 @@ import {
   PlusCircle,
   ArrowDownToLine,
   LucideIcon,
-  PieChart
+  PieChart,
+  Code,
+  Moon,
+  Sun
 } from 'lucide-react';
 
 interface SideNavProps {
@@ -22,6 +26,8 @@ interface SideNavProps {
   isMobile: boolean;
   onNavigate: (view: string) => void;
   currentView: string;
+  userRole: string; // New prop for role
+  onLogout: () => void; // New prop for logout handler
 }
 
 // --- Configuration ---
@@ -82,24 +88,24 @@ const Flyout: React.FC<FlyoutProps> = ({ title, children, top, onMouseEnter, onM
   // Position fixed to the right of the 60px collapsed rail
   return (
     <div 
-      className="fixed left-[60px] z-[var(--z-dropdown)] w-[220px] bg-[#262626] border border-[#393939] shadow-2xl animate-slide-in-right origin-left"
+      className="fixed left-[60px] z-[var(--z-dropdown)] w-[220px] bg-[var(--bg-1)] border border-[var(--border-1)] shadow-2xl animate-slide-in-right origin-left"
       style={{ top: `${top}px` }}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      <div className="px-4 py-3 border-b border-[#393939] text-[11px] font-bold text-[#8d8d8d] tracking-wider uppercase bg-[#262626]">
+      <div className="px-4 py-3 border-b border-[var(--border-1)] text-[11px] font-bold text-[var(--text-tertiary)] tracking-wider uppercase bg-[var(--bg-1)]">
         {title}
       </div>
-      <div className="py-1 bg-[#262626]">
+      <div className="py-1 bg-[var(--bg-1)]">
         {children}
       </div>
     </div>
   );
 };
 
-const SideNav: React.FC<SideNavProps> = ({ isOpen, setIsOpen, isMobile, onNavigate, currentView }) => {
-  // In expanded mode, groups are always conceptually expanded, so `expandedGroups` is only relevant for collapsed mode flyouts.
-  const [expandedGroups] = useState<string[]>(['inventory', 'shipments']); // This state is now mostly for the initial render logic of flyouts
+const SideNav: React.FC<SideNavProps> = ({ isOpen, setIsOpen, isMobile, onNavigate, currentView, userRole, onLogout }) => {
+  const { theme, toggleTheme } = useTheme();
+  const [expandedGroups] = useState<string[]>(['inventory', 'shipments']); 
   const [hoveredParent, setHoveredParent] = useState<string | null>(null);
   const [flyoutTop, setFlyoutTop] = useState<number>(0);
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -111,6 +117,25 @@ const SideNav: React.FC<SideNavProps> = ({ isOpen, setIsOpen, isMobile, onNaviga
 
   // Derived state
   const isCollapsed = !isOpen && !isMobile;
+
+  // Filter NAV_ITEMS based on user role
+  const filteredNavItems = useMemo(() => {
+    return NAV_ITEMS.map(item => {
+      if (item.children) {
+        return {
+          ...item,
+          children: item.children.filter(child => {
+            // Hide 'create-shipment' for Staff users
+            if (child.id === 'create-shipment' && userRole.includes('Staff')) {
+              return false;
+            }
+            return true;
+          })
+        };
+      }
+      return item;
+    });
+  }, [userRole]);
 
   // Close settings on outside click
   useEffect(() => {
@@ -155,10 +180,7 @@ const SideNav: React.FC<SideNavProps> = ({ isOpen, setIsOpen, isMobile, onNaviga
       e.stopPropagation(); // Prevent immediate closing due to document click listener
       if (settingsRef.current) {
           const rect = settingsRef.current.getBoundingClientRect();
-          // Approximate height of the settings menu based on its content:
-          // 4 items * ~40px height per item + top/bottom padding = 160 + 20 = ~180px
           const menuHeight = 180; 
-          // Position top of menu such that its bottom aligns with the button's bottom, minus a small offset
           setSettingsTop(rect.bottom - menuHeight); 
       }
       setIsSettingsOpen(!isSettingsOpen);
@@ -173,9 +195,18 @@ const SideNav: React.FC<SideNavProps> = ({ isOpen, setIsOpen, isMobile, onNaviga
     return false;
   };
 
-  const handleSettingClick = (view: string) => {
-      onNavigate(view);
-      setIsSettingsOpen(false);
+  const handleSettingClick = (action: string) => {
+      if (action === 'Theme') {
+        toggleTheme();
+        // Keep settings open to see change? Or close. Let's close.
+        setIsSettingsOpen(false);
+      } else if (action === 'users') {
+        onNavigate('users');
+        setIsSettingsOpen(false);
+      } else {
+        // Placeholder for other actions
+        setIsSettingsOpen(false);
+      }
   }
 
   return (
@@ -183,40 +214,40 @@ const SideNav: React.FC<SideNavProps> = ({ isOpen, setIsOpen, isMobile, onNaviga
       {/* Mobile Backdrop */}
       {isMobile && isOpen && (
         <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[var(--z-modal-backdrop)] animate-fade-in-fast" 
+          className="fixed inset-0 bg-[var(--overlay)] backdrop-blur-sm z-[var(--z-modal-backdrop)] animate-fade-in-fast" 
           onClick={() => setIsOpen(false)} 
         />
       )}
 
       <aside 
         className={`
-          fixed top-0 left-0 h-full z-[var(--z-modal)] bg-[#262626] border-r border-[#393939] transition-transform duration-300 ease-[cubic-bezier(0.2,0,0,1)] flex flex-col overflow-hidden
+          fixed top-0 left-0 h-full z-[var(--z-modal)] bg-[var(--bg-1)] border-r border-[var(--border-1)] transition-transform duration-300 ease-[cubic-bezier(0.2,0,0,1)] flex flex-col overflow-hidden
           ${isOpen ? 'w-[250px] translate-x-0' : 'w-[60px]'}
           ${isMobile && !isOpen ? '-translate-x-full w-[250px]' : ''}
         `}
       >
         {/* Header */}
-        <div className="h-[48px] flex items-center justify-between px-4 border-b border-[#393939] shrink-0">
+        <div className="h-[48px] flex items-center justify-between px-4 border-b border-[var(--border-1)] shrink-0 transition-colors">
           <div className={`flex items-center gap-3 overflow-hidden whitespace-nowrap transition-all duration-300 ${isOpen ? 'w-auto opacity-100' : 'w-0 opacity-0'}`}>
             <div className="w-8 h-8 bg-[#0f62fe] flex items-center justify-center text-white font-bold text-sm shrink-0 animate-fade-in-fast">
               KV
             </div>
             <div className="flex flex-col justify-center">
-              <span className="font-bold text-[#f4f4f4] text-[14px] leading-none">Inventory</span>
-              <span className="text-[#8d8d8d] text-[10px] leading-none mt-[3px] font-medium tracking-wide">(Admin)</span>
+              <span className="font-bold text-[var(--text-primary)] text-[14px] leading-none">FBA Manager</span>
+              <span className="text-[var(--text-tertiary)] text-[10px] leading-none mt-[3px] font-medium tracking-wide">{userRole}</span>
             </div>
           </div>
 
           {!isMobile && (
             <button 
               onClick={() => setIsOpen(!isOpen)}
-              className="p-1 hover:bg-[#393939] text-[#c6c6c6] mx-auto md:mx-0 transition-transform duration-300 active:scale-90"
+              className="p-1 hover:bg-[var(--bg-2)] text-[var(--text-secondary)] mx-auto md:mx-0 transition-transform duration-300 active:scale-90"
             >
               {isOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
             </button>
           )}
            {isMobile && (
-             <button onClick={() => setIsOpen(false)} className="p-1 hover:bg-[#393939] text-[#c6c6c6]">
+             <button onClick={() => setIsOpen(false)} className="p-1 hover:bg-[var(--bg-2)] text-[var(--text-secondary)]">
                  <ChevronLeft size={16} />
              </button>
           )}
@@ -224,11 +255,8 @@ const SideNav: React.FC<SideNavProps> = ({ isOpen, setIsOpen, isMobile, onNaviga
 
         {/* Navigation Items */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden py-4">
-          {NAV_ITEMS.map((item, index) => {
+          {filteredNavItems.map((item, index) => {
              const isActive = isGroupActive(item);
-             // Children are always visually expanded in expanded mode
-             // The expandedGroups state is primarily for *collapsed* mode flyout logic, not direct rendering.
-             // If isOpen, children are visible. If collapsed, children are hidden unless in flyout.
              const showChildrenVisually = isOpen; 
              const Icon = item.icon;
 
@@ -237,33 +265,29 @@ const SideNav: React.FC<SideNavProps> = ({ isOpen, setIsOpen, isMobile, onNaviga
                  {/* Parent Item */}
                  <button
                     onClick={() => {
-                        if (item.view) { // If it's a navigatable item (parent or child)
+                        if (item.view) { 
                             onNavigate(item.view);
-                            setHoveredParent(null); // Close any open flyout if navigating
+                            setHoveredParent(null); 
                         }
-                        // If it's a parent without a view (just a section header), do nothing on click in expanded mode.
-                        // Hover for flyout in collapsed mode is separate.
                     }}
                     onMouseEnter={(e) => item.children && item.children.length > 0 ? handleParentMouseEnter(item.id, e) : undefined}
                     onMouseLeave={item.children && item.children.length > 0 ? handleParentMouseLeave : undefined}
                     className={`
                       w-full flex items-center h-[48px] px-4 transition-all duration-200 relative group
-                      ${isActive ? 'border-l-4 border-[#0f62fe] bg-[#393939]' : 'border-l-4 border-transparent hover:bg-[#393939] hover:pl-5'}
+                      ${isActive ? 'border-l-4 border-[#0f62fe] bg-[var(--bg-2)]' : 'border-l-4 border-transparent hover:bg-[var(--bg-2)] hover:pl-5'}
                       ${isCollapsed ? 'justify-center px-0 hover:pl-0' : ''}
                     `}
                     title={isCollapsed ? item.label : ''}
                  >
                     <Icon 
                       size={20} 
-                      className={`shrink-0 transition-colors duration-200 ${isActive ? 'text-[#f4f4f4]' : 'text-[#c6c6c6] group-hover:text-[#f4f4f4]'}`} 
+                      className={`shrink-0 transition-colors duration-200 ${isActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'}`} 
                     />
                     
                     {/* Label (Expanded Mode) */}
-                    <span className={`ml-3 whitespace-nowrap transition-all duration-200 ${isOpen ? 'opacity-100 translate-x-0 text-[#c6c6c6] group-hover:text-[#f4f4f4]' : 'opacity-0 -translate-x-4 w-0 overflow-hidden absolute'}`}>
+                    <span className={`ml-3 whitespace-nowrap transition-all duration-200 ${isOpen ? 'opacity-100 translate-x-0 text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]' : 'opacity-0 -translate-x-4 w-0 overflow-hidden absolute'}`}>
                       {item.label}
                     </span>
-
-                    {/* Removed Chevron: Parents are not collapsible in expanded mode, and flyouts handle their own chevrons if any */}
                  </button>
 
                  {/* Children (Always Visible in Expanded Mode; Hidden by default in Collapsed Mode, shown in Flyout) */}
@@ -282,7 +306,7 @@ const SideNav: React.FC<SideNavProps> = ({ isOpen, setIsOpen, isMobile, onNaviga
                             onClick={() => onNavigate(child.view!)}
                             className={`
                               w-full flex items-center h-[40px] pl-12 pr-4 transition-all duration-200
-                              ${isChildActive ? 'text-[#f4f4f4] bg-[#393939] font-medium translate-x-1' : 'text-[#c6c6c6] hover:text-[#f4f4f4] hover:bg-[#353535] hover:pl-14'}
+                              ${isChildActive ? 'text-[var(--text-primary)] bg-[var(--bg-2)] font-medium translate-x-1' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:pl-14'}
                             `}
                             style={{ transitionDelay: `${childIdx * 30}ms` }}
                           >
@@ -299,11 +323,21 @@ const SideNav: React.FC<SideNavProps> = ({ isOpen, setIsOpen, isMobile, onNaviga
         </div>
 
         {/* Footer */}
-        <div className="border-t border-[#393939] shrink-0 bg-[#262626] animate-fade-in-fast">
+        <div className="border-t border-[var(--border-1)] shrink-0 bg-[var(--bg-1)] animate-fade-in-fast transition-colors">
+           {/* SideNav Credits Mention (Expanded Only) */}
+           {isOpen && (
+             <div className="px-4 py-3 text-[11px] text-[var(--text-tertiary)] border-b border-[var(--border-1)] transition-opacity duration-300">
+               <div className="flex items-center gap-1.5 opacity-60">
+                 <Code size={12} />
+                 <span>By GM & Rajab</span>
+               </div>
+             </div>
+           )}
+
            <div className="relative" ref={settingsRef}>
               <button 
                 onClick={handleSettingsToggle}
-                className={`w-full flex items-center h-[48px] px-4 hover:bg-[#393939] text-[#c6c6c6] hover:text-[#f4f4f4] transition-colors duration-200 ${isCollapsed ? 'justify-center px-0' : ''}`}
+                className={`w-full flex items-center h-[48px] px-4 hover:bg-[var(--bg-2)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-200 ${isCollapsed ? 'justify-center px-0' : ''}`}
                 title={isCollapsed ? "Settings" : ""}
               >
                  <Settings size={20} className="shrink-0 group-hover:rotate-45 transition-transform duration-300" />
@@ -314,8 +348,8 @@ const SideNav: React.FC<SideNavProps> = ({ isOpen, setIsOpen, isMobile, onNaviga
            </div>
            
            <button 
-              onClick={() => alert("Logged out")}
-              className={`w-full flex items-center h-[48px] px-4 hover:bg-[#393939] text-[#c6c6c6] hover:text-[#f4f4f4] transition-colors duration-200 ${isCollapsed ? 'justify-center px-0' : ''}`}
+              onClick={onLogout}
+              className={`w-full flex items-center h-[48px] px-4 hover:bg-[var(--bg-2)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-200 ${isCollapsed ? 'justify-center px-0' : ''}`}
               title={isCollapsed ? "Log Out" : ""}
            >
               <LogOut size={20} className="shrink-0" />
@@ -329,15 +363,15 @@ const SideNav: React.FC<SideNavProps> = ({ isOpen, setIsOpen, isMobile, onNaviga
       {/* PORTALS for Flyouts & Menus (Outside overflow-hidden container) */}
       
       {/* Navigation Flyout (Collapsed Mode) */}
-      {isCollapsed && hoveredParent && NAV_ITEMS.find(i => i.id === hoveredParent)?.children?.length && (
+      {isCollapsed && hoveredParent && filteredNavItems.find(i => i.id === hoveredParent)?.children?.length && (
          <Portal>
             <Flyout 
-              title={NAV_ITEMS.find(i => i.id === hoveredParent)?.label || ''} 
+              title={filteredNavItems.find(i => i.id === hoveredParent)?.label || ''} 
               top={flyoutTop} 
               onMouseEnter={handleFlyoutMouseEnter}
               onMouseLeave={handleParentMouseLeave}
             >
-               {NAV_ITEMS.find(i => i.id === hoveredParent)?.children?.map((child, idx) => {
+               {filteredNavItems.find(i => i.id === hoveredParent)?.children?.map((child, idx) => {
                  const isChildActive = child.view === currentView;
                  const ChildIcon = child.icon;
                  return (
@@ -349,7 +383,7 @@ const SideNav: React.FC<SideNavProps> = ({ isOpen, setIsOpen, isMobile, onNaviga
                       }}
                       className={`
                         w-full text-left px-4 py-2.5 text-[14px] flex items-center gap-2 transition-all duration-200
-                        ${isChildActive ? 'bg-[#393939] text-[#f4f4f4] border-l-4 border-[#0f62fe]' : 'text-[#c6c6c6] hover:bg-[#353535] hover:text-[#f4f4f4] border-l-4 border-transparent hover:pl-5'}
+                        ${isChildActive ? 'bg-[var(--bg-2)] text-[var(--text-primary)] border-l-4 border-[#0f62fe]' : 'text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] border-l-4 border-transparent hover:pl-5'}
                         opacity-0 animate-slide-in-right
                       `}
                       style={{ animationDelay: `${idx * 50}ms` }}
@@ -366,8 +400,6 @@ const SideNav: React.FC<SideNavProps> = ({ isOpen, setIsOpen, isMobile, onNaviga
       {/* Settings Dropdown */}
       {isSettingsOpen && (
         <Portal>
-          {/* Backdrop to handle outside clicks better for Portals */}
-          {/* Backdrop with a lower z-index than the menu itself */}
           <div 
             className="fixed inset-0 z-[calc(var(--z-dropdown) - 1)]" 
             onClick={() => setIsSettingsOpen(false)} 
@@ -375,26 +407,39 @@ const SideNav: React.FC<SideNavProps> = ({ isOpen, setIsOpen, isMobile, onNaviga
           
           <div 
             id="settings-dropdown-portal" // Add ID for click outside logic
-            className="fixed z-[var(--z-dropdown)] w-[200px] bg-[#262626] border border-[#393939] shadow-xl animate-slide-up origin-bottom duration-200"
+            className="fixed z-[var(--z-dropdown)] w-[200px] bg-[var(--bg-1)] border border-[var(--border-1)] shadow-xl animate-slide-up origin-bottom duration-200"
             style={{ 
                left: isOpen ? '250px' : '60px', 
                top: `${settingsTop}px` 
             }}
           >
               <div 
-                  className="px-4 py-3 text-[#f4f4f4] hover:bg-[#393939] text-sm cursor-pointer border-b border-[#393939] transition-colors hover:pl-5 duration-200"
+                  className="px-4 py-3 text-[var(--text-primary)] hover:bg-[var(--bg-2)] text-sm cursor-pointer border-b border-[var(--border-1)] transition-colors hover:pl-5 duration-200"
                   onClick={() => handleSettingClick('users')}
               >
                   Users
               </div>
-              {['Configuration', 'Request Permissions', 'Switch Account', 'Theme'].map((item, idx) => (
-                 <div 
-                    key={item}
-                    className="px-4 py-3 text-[#f4f4f4] hover:bg-[#393939] text-sm cursor-pointer border-b border-[#393939] last:border-0 transition-colors hover:pl-5 duration-200"
-                 >
-                    {item}
+              
+              {/* Configuration Placeholder */}
+              <div className="px-4 py-3 text-[var(--text-primary)] hover:bg-[var(--bg-2)] text-sm cursor-pointer border-b border-[var(--border-1)] transition-colors hover:pl-5 duration-200">
+                  Configuration
+              </div>
+              
+              {/* Theme Toggle */}
+              <div 
+                 className="px-4 py-3 text-[var(--text-primary)] hover:bg-[var(--bg-2)] text-sm cursor-pointer border-b border-[var(--border-1)] transition-colors hover:pl-5 duration-200 flex items-center justify-between"
+                 onClick={() => handleSettingClick('Theme')}
+              >
+                 <span>Toggle Theme</span>
+                 <div className="flex items-center gap-2 text-[var(--text-secondary)]">
+                    {theme === 'dark' ? <Moon size={14} /> : <Sun size={14} />}
+                    <span className="text-[10px] uppercase">{theme}</span>
                  </div>
-              ))}
+              </div>
+
+               <div className="px-4 py-3 text-[var(--text-primary)] hover:bg-[var(--bg-2)] text-sm cursor-pointer border-b border-[var(--border-1)] last:border-0 transition-colors hover:pl-5 duration-200">
+                  Switch Account
+               </div>
           </div>
         </Portal>
       )}

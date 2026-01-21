@@ -1,5 +1,3 @@
-
-
 import React, { useState, useRef, useEffect, Fragment, useCallback } from 'react';
 import { 
   Plus, 
@@ -20,7 +18,7 @@ interface CreateShipmentPageProps {
 }
 
 // Custom debounce utility
-const debounce = <T extends (...args: any[]) => void>(func: T, delay: number) => {
+export const debounce = <T extends (...args: any[]) => void>(func: T, delay: number) => {
   let timeout: ReturnType<typeof setTimeout> | null = null;
   const debounced = function(this: any, ...args: Parameters<T>) {
     const context = this;
@@ -368,30 +366,28 @@ const CreateShipmentPage: React.FC<CreateShipmentPageProps> = ({ onNavigate }) =
     }
   };
 
-  // Removed filteredProducts as apiSuggestions will be used directly
-
   // Reusable Styles
-  const inputBaseClasses = "w-full h-[48px] bg-[#262626] border border-[#393939] rounded-md text-[14px] text-[#f4f4f4] placeholder-[#8d8d8d] focus:outline-none focus:border-[#0f62fe] focus:ring-1 focus:ring-[#0f62fe]/20 transition-all";
+  const inputBaseClasses = "w-full h-[48px] bg-[var(--bg-1)] border border-[var(--border-1)] rounded-md text-[14px] text-[var(--text-primary)] placeholder-[var(--text-tertiary)] focus:outline-none focus:border-[#0f62fe] focus:ring-1 focus:ring-[#0f62fe]/20 transition-all";
 
   return (
-    <div className="w-full h-full bg-[#161616] flex flex-col overflow-y-auto animate-fade-in-fast">
+    <div className="w-full h-full bg-[var(--bg-0)] flex flex-col overflow-y-auto animate-fade-in-fast">
       
       {/* Page Header (Transparent/Blend) */}
-      <div className="px-4 md:px-8 py-6 shrink-0 bg-[#161616] sticky top-0 z-30 flex flex-col gap-4">
+      <div className="px-4 md:px-8 py-6 shrink-0 bg-[var(--bg-0)] sticky top-0 z-30 flex flex-col gap-4">
         <button 
           onClick={handleCancel}
-          className="flex items-center text-[#8d8d8d] hover:text-[#f4f4f4] text-[13px] transition-colors self-start"
+          className="flex items-center text-[var(--text-tertiary)] hover:text-[var(--text-primary)] text-[13px] transition-colors self-start"
         >
           <ArrowLeft size={16} className="mr-2" />
           Back to Dashboard
         </button>
         <div className="flex items-center gap-4">
-            <div className="p-2.5 bg-[#212121] rounded-lg border border-[#333] text-[#f4f4f4]">
+            <div className="p-2.5 bg-[var(--bg-1)] rounded-lg border border-[var(--border-1)] text-[var(--text-primary)]">
                 <Package size={24} strokeWidth={1.5} />
             </div>
             <div>
-                <h1 className="text-[24px] font-semibold text-[#f4f4f4] tracking-tight">Create Shipment</h1>
-                <p className="text-[13px] text-[#8d8d8d] mt-0.5 font-normal">Define shipment details and add items from your inventory.</p>
+                <h1 className="text-[24px] font-semibold text-[var(--text-primary)] tracking-tight">Create Shipment</h1>
+                <p className="text-[13px] text-[var(--text-tertiary)] mt-0.5 font-normal">Define shipment details and add items from your inventory.</p>
             </div>
         </div>
       </div>
@@ -400,14 +396,14 @@ const CreateShipmentPage: React.FC<CreateShipmentPageProps> = ({ onNavigate }) =
       <div className="flex-1 px-4 md:px-8 pb-12 max-w-4xl mx-auto w-full relative">
         
         {/* Main Card */}
-        <div className="bg-[#212121] rounded-xl border border-[#333] shadow-xl overflow-hidden animate-slide-up-fade ring-1 ring-white/5">
+        <div className="bg-[var(--bg-1)] rounded-xl border border-[var(--border-1)] shadow-xl overflow-hidden animate-slide-up-fade ring-1 ring-white/5">
             
             {/* Form Body */}
             <div className="p-6 md:p-10 space-y-8">
                 
                 {/* Shipment ID Section */}
                 <div className="space-y-3 max-w-lg">
-                    <label className="text-[14px] font-medium text-[#e0e0e0]">
+                    <label className="text-[14px] font-medium text-[var(--text-primary)]">
                         Shipment ID <span className="text-[#ff8389]/80">*</span>
                     </label>
                     <input 
@@ -429,7 +425,7 @@ const CreateShipmentPage: React.FC<CreateShipmentPageProps> = ({ onNavigate }) =
                            <AlertCircle size={12} /> {errors.shipmentId}
                         </p>
                     ) : (
-                        <p className="text-[12px] text-[#757575]">
+                        <p className="text-[12px] text-[var(--text-tertiary)]">
                             A unique identifier for this shipment.
                         </p>
                     )}
@@ -437,7 +433,7 @@ const CreateShipmentPage: React.FC<CreateShipmentPageProps> = ({ onNavigate }) =
 
                 {/* Shipment Name Section */}
                 <div className="space-y-3 max-w-lg">
-                    <label className="text-[14px] font-medium text-[#e0e0e0]">
+                    <label className="text-[14px] font-medium text-[var(--text-primary)]">
                         Shipment Name <span className="text-[#ff8389]/80">*</span>
                     </label>
                     <input 
@@ -459,39 +455,39 @@ const CreateShipmentPage: React.FC<CreateShipmentPageProps> = ({ onNavigate }) =
                            <AlertCircle size={12} /> {errors.name}
                         </p>
                     ) : (
-                        <p className="text-[12px] text-[#757575]">
+                        <p className="text-[12px] text-[var(--text-tertiary)]">
                             Give this shipment a descriptive name for easier tracking.
                         </p>
                     )}
                 </div>
 
                 {/* Gentle Divider */}
-                <div className="w-full border-t border-[#303030]" />
+                <div className="w-full border-t border-[var(--border-1)]" />
 
                 {/* Shipment Contents Section */}
                 <div className="space-y-6">
                     <div className="flex items-end justify-between">
                         <div>
-                            <h3 className="text-[18px] font-medium text-[#e0e0e0]">Shipment Contents</h3>
-                            <p className="text-[12px] text-[#757575] mt-1">Add items you wish to include in this shipment.</p>
+                            <h3 className="text-[18px] font-medium text-[var(--text-primary)]">Shipment Contents</h3>
+                            <p className="text-[12px] text-[var(--text-tertiary)] mt-1">Add items you wish to include in this shipment.</p>
                         </div>
-                        <span className="text-[12px] font-mono text-[#757575] bg-[#2a2a2a] px-2 py-1 rounded border border-[#393939]">{items.length} item{items.length !== 1 ? 's' : ''}</span>
+                        <span className="text-[12px] font-mono text-[var(--text-tertiary)] bg-[var(--bg-2)] px-2 py-1 rounded border border-[var(--border-1)]">{items.length} item{items.length !== 1 ? 's' : ''}</span>
                     </div>
                     
                     <div className="space-y-4 overflow-visible">
                         {items.map((item, index) => (
                             <div 
                                 key={item.id} 
-                                className="group relative bg-[#1d1d1d] p-5 border border-[#333] rounded-lg hover:border-[#4a4a4a] transition-all animate-slide-up-fade"
+                                className="group relative bg-[var(--bg-2)] p-5 border border-[var(--border-1)] rounded-lg hover:border-[var(--border-2)] transition-all animate-slide-up-fade"
                                 style={{ animationDelay: `${index * 50}ms` }}
                             >
                                 <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
                                     
                                     {/* SKU Input */}
                                     <div className="col-span-12 md:col-span-5 relative">
-                                        <label className="text-[13px] text-[#a0a0a0] mb-2 block font-medium">Product SKU <span className="text-[#ff8389]/80">*</span></label>
+                                        <label className="text-[13px] text-[var(--text-tertiary)] mb-2 block font-medium">Product SKU <span className="text-[#ff8389]/80">*</span></label>
                                         <div className="relative">
-                                            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#757575]" />
+                                            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]" />
                                             <input 
                                                 type="text" 
                                                 value={item.sku}
@@ -508,7 +504,7 @@ const CreateShipmentPage: React.FC<CreateShipmentPageProps> = ({ onNavigate }) =
                                                 `}
                                             />
                                             {isLoadingSku[index] && (
-                                              <Loader2 size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#757575] animate-spin" />
+                                              <Loader2 size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] animate-spin" />
                                             )}
                                         </div>
                                         
@@ -529,7 +525,7 @@ const CreateShipmentPage: React.FC<CreateShipmentPageProps> = ({ onNavigate }) =
                                             <Portal>
                                                 <div 
                                                     id={`product-search-dropdown-${index}`}
-                                                    className="absolute bg-[#262626] border border-[#393939] rounded-md shadow-2xl z-[var(--z-dropdown)] max-h-[220px] overflow-y-auto mt-1 animate-drop-down ring-1 ring-black/20"
+                                                    className="absolute bg-[var(--bg-1)] border border-[var(--border-1)] rounded-md shadow-2xl z-[var(--z-dropdown)] max-h-[220px] overflow-y-auto mt-1 animate-drop-down ring-1 ring-black/20"
                                                     style={{
                                                         top: (searchInputRefs.current[index]?.getBoundingClientRect().bottom || 0) + window.scrollY + 5, // 5px offset
                                                         left: searchInputRefs.current[index]?.getBoundingClientRect().left || 0,
@@ -537,7 +533,7 @@ const CreateShipmentPage: React.FC<CreateShipmentPageProps> = ({ onNavigate }) =
                                                     }}
                                                 >
                                                     {isSuggestionsLoading ? (
-                                                        <div className="px-4 py-4 text-[13px] text-[#8d8d8d] text-center italic flex items-center justify-center gap-2">
+                                                        <div className="px-4 py-4 text-[13px] text-[var(--text-tertiary)] text-center italic flex items-center justify-center gap-2">
                                                             <Loader2 size={16} className="animate-spin" /> Loading suggestions...
                                                         </div>
                                                     ) : apiSuggestions.length > 0 ? (
@@ -545,15 +541,15 @@ const CreateShipmentPage: React.FC<CreateShipmentPageProps> = ({ onNavigate }) =
                                                             <div 
                                                                 key={product._id}
                                                                 onClick={() => selectProduct(index, product)}
-                                                                className="px-4 py-3 hover:bg-[#333] cursor-pointer text-[14px] text-[#c6c6c6] hover:text-[#f4f4f4] flex flex-col border-b border-[#333] last:border-0 transition-colors"
+                                                                className="px-4 py-3 hover:bg-[var(--bg-2)] cursor-pointer text-[14px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex flex-col border-b border-[var(--border-1)] last:border-0 transition-colors"
                                                             >
-                                                                <span className="font-medium text-[#f4f4f4] mb-0.5">{product.sku}</span>
-                                                                <span className="text-[12px] text-[#8d8d8d]">{product.productName}</span>
-                                                                <span className="text-[10px] text-[#757575] font-mono mt-0.5">ASIN: {product.asin}</span>
+                                                                <span className="font-medium text-[var(--text-primary)] mb-0.5">{product.sku}</span>
+                                                                <span className="text-[12px] text-[var(--text-tertiary)]">{product.productName}</span>
+                                                                <span className="text-[10px] text-[var(--text-tertiary)] font-mono mt-0.5">ASIN: {product.asin}</span>
                                                             </div>
                                                         ))
                                                     ) : (
-                                                        <div className="px-4 py-4 text-[13px] text-[#8d8d8d] text-center italic">
+                                                        <div className="px-4 py-4 text-[13px] text-[var(--text-tertiary)] text-center italic">
                                                             {searchTerm.length < 2 ? 'Type at least 2 characters to search' : 'No matching products'}
                                                         </div>
                                                     )}
@@ -564,7 +560,7 @@ const CreateShipmentPage: React.FC<CreateShipmentPageProps> = ({ onNavigate }) =
 
                                     {/* ASIN Input */}
                                     <div className="col-span-12 md:col-span-4 relative">
-                                        <label className="text-[13px] text-[#a0a0a0] mb-2 block font-medium">ASIN <span className="text-[#ff8389]/80">*</span></label>
+                                        <label className="text-[13px] text-[var(--text-tertiary)] mb-2 block font-medium">ASIN <span className="text-[#ff8389]/80">*</span></label>
                                         <div className="relative">
                                             <input 
                                                 type="text" 
@@ -574,13 +570,13 @@ const CreateShipmentPage: React.FC<CreateShipmentPageProps> = ({ onNavigate }) =
                                                 placeholder="B0XXXXXXX"
                                                 className={`${inputBaseClasses} pl-4 pr-10 
                                                     ${item.error?.asin ? 'border-[#ff8389] focus:border-[#ff8389]' : ''}
-                                                    ${!item.isAsinEditable ? 'bg-[#1a1a1a] text-[#757575] border-[#2a2a2a]' : ''}
+                                                    ${!item.isAsinEditable ? 'bg-[var(--bg-2)] text-[var(--text-tertiary)] border-[var(--border-1)]' : ''}
                                                 `}
                                             />
                                             <button
                                                 type="button"
                                                 onClick={() => handleToggleAsinEditable(index)}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#757575] hover:text-[#f4f4f4] p-1 rounded hover:bg-[#333] transition-colors"
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] p-1 rounded hover:bg-[var(--bg-2)] transition-colors"
                                                 title={item.isAsinEditable ? "Lock ASIN" : "Edit ASIN"}
                                             >
                                                 <Pencil size={16} />
@@ -595,7 +591,7 @@ const CreateShipmentPage: React.FC<CreateShipmentPageProps> = ({ onNavigate }) =
 
                                     {/* Quantity Input */}
                                     <div className="col-span-12 md:col-span-2">
-                                        <label className="text-[13px] text-[#a0a0a0] mb-2 block font-medium">Quantity <span className="text-[#ff8389]/80">*</span></label>
+                                        <label className="text-[13px] text-[var(--text-tertiary)] mb-2 block font-medium">Quantity <span className="text-[#ff8389]/80">*</span></label>
                                         <input 
                                             type="number" 
                                             value={item.quantity}
@@ -618,7 +614,7 @@ const CreateShipmentPage: React.FC<CreateShipmentPageProps> = ({ onNavigate }) =
                                         <button 
                                             onClick={() => handleRemoveItem(index)}
                                             disabled={items.length === 1}
-                                            className={`p-2.5 text-[#666] hover:text-[#ff8389] hover:bg-[#2a2a2a] rounded-md transition-all ${items.length === 1 ? 'opacity-0 pointer-events-none' : ''}`}
+                                            className={`p-2.5 text-[var(--text-tertiary)] hover:text-[#ff8389] hover:bg-[var(--bg-1)] rounded-md transition-all ${items.length === 1 ? 'opacity-0 pointer-events-none' : ''}`}
                                             title="Remove item"
                                         >
                                             <Trash size={18} />
@@ -644,7 +640,7 @@ const CreateShipmentPage: React.FC<CreateShipmentPageProps> = ({ onNavigate }) =
             </div>
 
             {/* Footer Actions */}
-            <div className="bg-[#212121] border-t border-[#2a2a2a] p-6 md:px-10 flex flex-col md:flex-row justify-end items-center gap-4">
+            <div className="bg-[var(--bg-1)] border-t border-[var(--border-1)] p-6 md:px-10 flex flex-col md:flex-row justify-end items-center gap-4">
                 {errors.global && (
                     <p className="text-[#ff8389] text-[14px] mr-auto flex items-center gap-2 bg-[#ff8389]/10 px-3 py-2 rounded-md animate-fade-in-fast">
                         <AlertCircle size={16} /> {errors.global}
@@ -655,7 +651,7 @@ const CreateShipmentPage: React.FC<CreateShipmentPageProps> = ({ onNavigate }) =
                     <button 
                         onClick={handleCancel}
                         disabled={isSaving}
-                        className="h-[44px] flex-1 md:flex-none px-6 text-[#e0e0e0] bg-transparent border border-[#393939] hover:bg-[#2a2a2a] rounded-md text-[14px] font-medium transition-colors"
+                        className="h-[44px] flex-1 md:flex-none px-6 text-[var(--text-primary)] bg-transparent border border-[var(--border-1)] hover:bg-[var(--bg-2)] rounded-md text-[14px] font-medium transition-colors"
                     >
                         Cancel
                     </button>

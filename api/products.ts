@@ -41,11 +41,25 @@ export async function fetchProducts(params?: { page?: number; limit?: number; se
   if (params?.search) query.append('search', params.search);
 
   const response = await fetch(`${BASE_URL}/products?${query.toString()}`);
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-    throw new Error(errorData.message || 'Failed to fetch products');
+  
+  let responseText: string;
+  try {
+    responseText = await response.text();
+  } catch (e: any) {
+    throw new Error(`Network error or no response body: ${e.message}`);
   }
-  return response.json();
+
+  let responseData: any;
+  try {
+    responseData = JSON.parse(responseText);
+  } catch {
+    throw new Error(`Server returned non-JSON response (Status: ${response.status}): ${responseText.substring(0, 200)}...`);
+  }
+
+  if (!response.ok || !responseData.success) {
+    throw new Error(responseData.message || `API error: ${responseData.error || 'Unknown error'}`);
+  }
+  return responseData;
 }
 
 /**
@@ -84,9 +98,22 @@ export async function createProduct(input: {
     body: formData,
   });
 
-  const responseData = await response.json();
+  let responseText: string;
+  try {
+    responseText = await response.text();
+  } catch (e: any) {
+    throw new Error(`Network error or no response body: ${e.message}`);
+  }
+
+  let responseData: any;
+  try {
+    responseData = JSON.parse(responseText);
+  } catch {
+    throw new Error(`Server returned non-JSON response (Status: ${response.status}): ${responseText.substring(0, 200)}...`);
+  }
+
   if (!response.ok || !responseData.success) {
-    throw new Error(responseData.message || "Failed to create product.");
+    throw new Error(responseData.message || `API error: ${responseData.error || 'Unknown error'}`);
   }
   return responseData.data;
 }

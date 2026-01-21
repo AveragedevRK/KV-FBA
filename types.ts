@@ -84,24 +84,8 @@ export interface InventoryItem {
 
 export type ShipmentStatus = 'Draft' | 'In Progress' | 'Shipped' | 'Delivered' | 'Cancelled';
 
-export interface Shipment {
-  id: string;
-  shipmentId: string;
-  name: string;
-  destination: string;
-  originWarehouse: string;
-  totalItems: number;
-  carrier: string;
-  status: ShipmentStatus;
-  createdDate: string;
-  lastUpdated: string;
-  items?: ShipmentItem[]; // Added optional items property to Shipment interface
-  packingLines?: PackingLine[]; // New: Added packing lines
-  isPriority?: boolean; // New: Added priority status
-  priorityIndex?: number; // New: Added priority index
-}
-
 export interface PackingLine {
+  id: string; // Added for linking with shipping labels
   boxCount: number;
   dimensions: {
     length: number;
@@ -114,12 +98,50 @@ export interface PackingLine {
   unitsPerBox: { sku: string; quantity: number }[];
 }
 
+export interface ShippingLabel {
+  id: string;
+  fileName: string;
+  fileUrl: string;
+  appliesTo: string[]; // Array of PackingLine IDs
+  uploadedAt: string;
+}
+
+export interface Shipment {
+  shipmentId: string; // Changed from `id` to `shipmentId` as the primary identifier
+  name: string;
+  destination: string;
+  originWarehouse: string;
+  totalItems: number;
+  carrier: string;
+  status: ShipmentStatus;
+  createdDate: string;
+  lastUpdated: string;
+  items?: ShipmentItem[]; // Added optional items property to Shipment interface
+  packingLines?: PackingLine[]; // New: Added packing lines
+  isPriority?: boolean; // New: Added priority status
+  priorityIndex?: number; // New: Added priority index
+  shippingLabels?: ShippingLabel[]; // New: Added shipping labels
+  // New: Internal property for details panel to store pre-calculated packed quantities
+  packedQuantities?: Record<string, number>; 
+}
+
 export interface ShipmentItem {
   sku: string;
   name: string;
-  quantity: number;
+  quantity: number | ''; // Fix: Allow quantity to be an empty string for UI inputs
   asin: string; // New field
+  // New: Field to track original quantity for comparison during edits
+  originalQuantity?: number; 
 }
+
+// Internal type for items when editing shipment contents
+export interface EditableShipmentItem extends ShipmentItem {
+  id: string; // Add local ID for key prop in lists
+  isNew?: boolean; // True if this item is being added
+  error?: string; // Validation error specific to this item
+  isAsinEditable?: boolean; // For new items to make ASIN editable
+}
+
 
 export interface BoxType {
   id: string;

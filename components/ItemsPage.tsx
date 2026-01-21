@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useItems, INITIAL_FILTERS } from '../hooks/useItems';
 import ItemsHeader from './items/ItemsHeader';
@@ -36,7 +37,10 @@ const ItemsPage: React.FC<ItemsPageProps> = ({ onNavigate }) => {
     totalPages,
     setCurrentPage,
     itemsPerPage,
-    setItemsPerPage
+    setItemsPerPage,
+
+    isLoading, // New: Get isLoading state
+    refresh,   // New: Get refresh function
   } = useItems();
 
   const handleClearFilters = () => {
@@ -73,6 +77,8 @@ const ItemsPage: React.FC<ItemsPageProps> = ({ onNavigate }) => {
         hasActiveFilters={hasActiveFilters}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
+        onRefresh={refresh} // New: Pass refresh function
+        isLoading={isLoading} // New: Pass loading state
       />
 
       {viewMode === 'list' ? (
